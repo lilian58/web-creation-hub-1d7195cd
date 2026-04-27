@@ -1,4 +1,4 @@
-import { Search, Heart } from "lucide-react";
+import { Search } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 
@@ -8,21 +8,14 @@ const books = ["Genèse", "Exode", "Lévitique", "Nombres", "Psaumes", "Proverbe
 export default function Bible() {
   const [tab, setTab] = useState("Tous");
   return (
-    <div className="px-4 lg:px-10 py-6 lg:py-10 max-w-6xl mx-auto space-y-6">
-      <div className="hidden lg:flex items-center justify-between">
-        <h1 className="font-display text-4xl font-bold text-primary">Bible</h1>
-        <button className="p-3 rounded-full hover:bg-muted">
-          <Heart className="w-5 h-5 text-primary" />
-        </button>
-      </div>
-
+    <div className="px-4 md:px-6 lg:px-10 py-6 lg:py-8 max-w-6xl mx-auto space-y-6">
       {/* Search */}
       <div className="relative">
         <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
         <input
           type="search"
           placeholder="Rechercher un livre, chapitre, verset"
-          className="w-full h-13 pl-12 pr-4 py-3.5 bg-muted rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+          className="w-full h-12 pl-12 pr-4 bg-muted rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
         />
       </div>
 

@@ -16,10 +16,9 @@ const sermons = [
 export default function Predications() {
   const [cat, setCat] = useState("Toutes");
   return (
-    <div className="px-4 lg:px-10 py-6 lg:py-10 max-w-6xl mx-auto space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="font-display text-2xl lg:text-4xl font-bold text-primary">Prédications</h1>
-        <button className="p-2.5 rounded-full hover:bg-muted">
+    <div className="px-4 md:px-6 lg:px-10 py-6 lg:py-8 max-w-6xl mx-auto space-y-6">
+      <div className="flex items-center justify-end">
+        <button className="p-2.5 rounded-full hover:bg-muted" aria-label="Filtrer">
           <Filter className="w-5 h-5 text-primary" />
         </button>
       </div>

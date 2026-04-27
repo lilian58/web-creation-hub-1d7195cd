@@ -18,15 +18,15 @@ const sermons = [
 
 export default function Home() {
   return (
-    <div className="px-4 lg:px-10 py-6 lg:py-10 max-w-6xl mx-auto space-y-8">
+    <div className="px-4 md:px-6 lg:px-10 py-6 lg:py-8 max-w-6xl mx-auto space-y-8">
       {/* Greeting */}
-      <div className="hidden lg:block">
-        <h1 className="font-display text-4xl font-bold text-primary">Bonjour, Sarah ✨</h1>
-        <p className="text-muted-foreground mt-1">Que Dieu bénisse ta journée.</p>
-      </div>
-      <div className="lg:hidden">
-        <h2 className="font-display text-2xl font-bold text-primary">Bonjour, Sarah</h2>
-        <p className="text-sm text-muted-foreground">Que Dieu bénisse ta journée ✨</p>
+      <div>
+        <h2 className="font-display text-2xl md:text-3xl lg:text-4xl font-bold text-primary">
+          Bonjour, Sarah ✨
+        </h2>
+        <p className="text-sm md:text-base text-muted-foreground mt-1">
+          Que Dieu bénisse ta journée.
+        </p>
       </div>
 
       {/* Verse of the day */}
