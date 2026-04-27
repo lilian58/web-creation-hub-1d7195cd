@@ -14,8 +14,10 @@ const navItems = [
   { to: "/app/profil", label: "Profil", icon: User },
 ];
 
-// Mobile bottom nav: 5 items max for usability
-const mobileNavItems = navItems.filter((i) => i.to !== "/app/journal" && i.to !== "/app/bibliotheque");
+// Mobile bottom nav: Messages devient un bouton flottant — on l'exclut + Journal/Bibliotheque (déjà dans Profil/Accueil)
+const mobileNavItems = navItems.filter(
+  (i) => !["/app/journal", "/app/bibliotheque", "/app/messages"].includes(i.to)
+);
 
 export default function AppLayout() {
   const location = useLocation();
@@ -98,6 +100,20 @@ export default function AppLayout() {
         <main className="flex-1 pb-24 md:pb-6 min-w-0">
           <Outlet />
         </main>
+
+        {/* Mobile-only floating Messages button */}
+        {!/^\/app\/(call|messages)/.test(location.pathname) && (
+          <NavLink
+            to="/app/messages"
+            aria-label="Messages"
+            className="md:hidden fixed bottom-20 right-4 z-50 w-14 h-14 rounded-full gradient-primary text-primary-foreground flex items-center justify-center shadow-glow active:scale-95 transition"
+          >
+            <MessageCircle className="w-6 h-6" />
+            <span className="absolute top-1 right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-gold text-primary-deep text-[10px] font-bold flex items-center justify-center border-2 border-card">
+              3
+            </span>
+          </NavLink>
+        )}
 
         {/* Mobile-only bottom nav */}
         <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-card border-t shadow-card">
