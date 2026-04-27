@@ -1,5 +1,5 @@
 import { NavLink, Outlet, useLocation } from "react-router-dom";
-import { Home, BookOpen, Mic, MessageCircle, User, NotebookPen, Bell, Library } from "lucide-react";
+import { Home, BookOpen, Mic, MessageCircle, User, NotebookPen, Bell, Library, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 import logo from "@/assets/spiritlink-logo.png";
 
@@ -10,6 +10,7 @@ const navItems = [
   { to: "/app/predications", label: "Prédications", icon: Mic },
   { to: "/app/journal", label: "Journal", icon: NotebookPen },
   { to: "/app/messages", label: "Messages", icon: MessageCircle },
+  { to: "/app/contacts", label: "Contacts", icon: Users },
   { to: "/app/profil", label: "Profil", icon: User },
 ];
 
@@ -26,9 +27,13 @@ export default function AppLayout() {
     "/app/journal": "Journal",
     "/app/journal/new": "Nouvelle note",
     "/app/messages": "Messages",
+    "/app/messages/new": "Nouvelle conversation",
+    "/app/contacts": "Contacts",
     "/app/profil": "Profil",
   };
   const pageTitle = titleMap[location.pathname] ?? "SpiritLink";
+
+  // Les écrans d'appel sont déjà fixed inset-0 et se superposent au layout, ok.
 
   return (
     <div className="min-h-screen bg-background flex w-full">

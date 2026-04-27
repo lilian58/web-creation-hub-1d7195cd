@@ -1,5 +1,6 @@
-import { Search, Edit3, Phone, MoreVertical, Mic, Paperclip, Send, Play, ArrowLeft } from "lucide-react";
+import { Search, Edit3, Phone, Video, MoreVertical, Mic, Paperclip, Send, Play, ArrowLeft, Image as ImageIcon, FileText, NotebookPen, MapPin, X } from "lucide-react";
 import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
 const conversations = [
@@ -22,6 +23,16 @@ const messages = [
 
 export default function Messages() {
   const [active, setActive] = useState<typeof conversations[number] | null>(null);
+  const [showAttach, setShowAttach] = useState(false);
+  const navigate = useNavigate();
+
+  const attachOptions = [
+    { icon: ImageIcon, label: "Photo / Vidéo", color: "bg-blue-500" },
+    { icon: FileText, label: "Document PDF", color: "bg-rose-500" },
+    { icon: NotebookPen, label: "Note du Journal", color: "bg-gold" },
+    { icon: Mic, label: "Message vocal", color: "bg-primary" },
+    { icon: MapPin, label: "Position", color: "bg-emerald-500" },
+  ];
 
   return (
     <div className="h-[calc(100dvh-7.5rem)] md:h-[calc(100dvh-5rem)] md:px-6 lg:px-10 md:py-4 lg:py-6 max-w-7xl mx-auto w-full">
@@ -35,9 +46,13 @@ export default function Messages() {
         >
           <div className="p-4 lg:p-6 flex items-center justify-between border-b shrink-0">
             <h2 className="font-display text-xl font-bold text-primary">Conversations</h2>
-            <button className="w-9 h-9 rounded-full gradient-primary text-primary-foreground flex items-center justify-center shadow-glow">
+            <Link
+              to="/app/messages/new"
+              className="w-9 h-9 rounded-full gradient-primary text-primary-foreground flex items-center justify-center shadow-glow"
+              aria-label="Nouvelle conversation"
+            >
               <Edit3 className="w-4 h-4" />
-            </button>
+            </Link>
           </div>
           <div className="px-4 py-3 shrink-0">
             <div className="relative">
@@ -116,12 +131,27 @@ export default function Messages() {
                     {active.online ? "En ligne" : "Hors ligne"}
                   </p>
                 </div>
-                <button className="p-2 rounded-full hover:bg-muted">
+                <button
+                  onClick={() => navigate(`/app/call/audio/${active.id}`)}
+                  className="p-2 rounded-full hover:bg-muted"
+                  aria-label="Appel audio"
+                >
                   <Phone className="w-5 h-5 text-primary" />
                 </button>
-                <button className="p-2 rounded-full hover:bg-muted">
-                  <MoreVertical className="w-5 h-5 text-muted-foreground" />
+                <button
+                  onClick={() => navigate(`/app/call/video/${active.id}`)}
+                  className="p-2 rounded-full hover:bg-muted"
+                  aria-label="Appel vidéo"
+                >
+                  <Video className="w-5 h-5 text-primary" />
                 </button>
+                <Link
+                  to={`/app/contacts/${active.id}`}
+                  className="p-2 rounded-full hover:bg-muted"
+                  aria-label="Profil"
+                >
+                  <MoreVertical className="w-5 h-5 text-muted-foreground" />
+                </Link>
               </div>
 
               <div className="flex-1 overflow-y-auto p-4 lg:p-6 space-y-3 bg-muted/20">
@@ -186,7 +216,11 @@ export default function Messages() {
               </div>
 
               <div className="p-3 lg:p-4 border-t flex items-center gap-2 bg-card shrink-0">
-                <button className="p-2.5 rounded-full hover:bg-muted shrink-0">
+                <button
+                  onClick={() => setShowAttach(true)}
+                  className="p-2.5 rounded-full hover:bg-muted shrink-0"
+                  aria-label="Joindre"
+                >
                   <Paperclip className="w-5 h-5 text-muted-foreground" />
                 </button>
                 <input
@@ -200,6 +234,43 @@ export default function Messages() {
                   <Send className="w-4 h-4" />
                 </button>
               </div>
+
+              {/* Attachment sheet */}
+              {showAttach && (
+                <div
+                  className="fixed inset-0 z-50 bg-black/50 flex items-end md:items-center justify-center"
+                  onClick={() => setShowAttach(false)}
+                >
+                  <div
+                    className="bg-card w-full md:max-w-md rounded-t-3xl md:rounded-3xl p-5 shadow-card animate-in slide-in-from-bottom"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="font-display text-lg font-bold text-primary">Joindre</h3>
+                      <button
+                        onClick={() => setShowAttach(false)}
+                        className="w-8 h-8 rounded-full hover:bg-muted flex items-center justify-center"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                    <div className="grid grid-cols-3 gap-3">
+                      {attachOptions.map((opt) => (
+                        <button
+                          key={opt.label}
+                          onClick={() => setShowAttach(false)}
+                          className="flex flex-col items-center gap-2 p-3 rounded-2xl hover:bg-muted/60 transition"
+                        >
+                          <div className={cn("w-12 h-12 rounded-2xl text-white flex items-center justify-center", opt.color)}>
+                            <opt.icon className="w-5 h-5" />
+                          </div>
+                          <span className="text-xs text-center font-medium leading-tight">{opt.label}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
             </>
           ) : (
             <div className="hidden md:flex flex-1 items-center justify-center text-center p-8">
