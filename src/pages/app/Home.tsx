@@ -70,7 +70,7 @@ export default function Home() {
         </div>
         <div className="space-y-3">
           {sermons.map((s, i) => (
-            <div key={i} className="flex items-center gap-4 bg-card rounded-2xl p-3 shadow-soft hover:shadow-card transition group">
+            <Link to={`/app/predications/${i + 1}`} key={i} className="flex items-center gap-4 bg-card rounded-2xl p-3 shadow-soft hover:shadow-card transition group">
               <div className="relative w-20 h-20 lg:w-28 lg:h-24 rounded-xl overflow-hidden shrink-0">
                 <img src={preaching} alt="" className="w-full h-full object-cover" loading="lazy" width={800} height={600} />
                 <div className="absolute inset-0 bg-primary-deep/30 flex items-center justify-center group-hover:bg-primary-deep/50 transition">
@@ -84,7 +84,7 @@ export default function Home() {
                 <p className="text-sm text-muted-foreground">{s.author}</p>
                 <p className="text-xs text-muted-foreground mt-1">{s.duration}</p>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
       </div>
