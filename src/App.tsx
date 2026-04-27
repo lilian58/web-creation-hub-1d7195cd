@@ -53,6 +53,9 @@ const App = () => (
             <Route path="contacts/:id" element={<ContactProfile />} />
             <Route path="call/audio/:id" element={<CallAudio />} />
             <Route path="call/video/:id" element={<CallVideo />} />
+            <Route path="downloads" element={<Downloads />} />
+            <Route path="admin" element={<AdminDashboard />} />
+            <Route path="creator" element={<CreatorDashboard />} />
             <Route path="profil" element={<Profil />} />
           </Route>
           <Route path="*" element={<NotFound />} />
