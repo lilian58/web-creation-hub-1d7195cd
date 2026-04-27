@@ -88,7 +88,7 @@ export default function Messages() {
         {/* Chat panel */}
         <div
           className={cn(
-            "bg-card md:rounded-3xl md:shadow-soft flex-col overflow-hidden h-full",
+            "bg-card md:rounded-3xl md:shadow-soft flex-col overflow-hidden h-full min-h-0",
             active ? "flex" : "hidden md:flex"
           )}
         >
