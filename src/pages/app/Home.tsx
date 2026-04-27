@@ -1,12 +1,12 @@
 import { Link } from "react-router-dom";
-import { BookOpen, Mic, NotebookPen, MessageCircle, Play, ChevronRight } from "lucide-react";
+import { BookOpen, Mic, Library, MessageCircle, Play, ChevronRight } from "lucide-react";
 import verseBg from "@/assets/verse-bg.jpg";
 import preaching from "@/assets/preaching-1.jpg";
 
 const quickAccess = [
   { icon: BookOpen, label: "Bible", to: "/app/bible", color: "bg-primary text-primary-foreground" },
-  { icon: Mic, label: "Prédications", to: "/app/predications", color: "bg-gold-soft text-primary-deep" },
-  { icon: NotebookPen, label: "Journal", to: "/app/journal", color: "bg-primary/90 text-primary-foreground" },
+  { icon: Library, label: "Livres", to: "/app/bibliotheque", color: "bg-gold-soft text-primary-deep" },
+  { icon: Mic, label: "Prédications", to: "/app/predications", color: "bg-primary/90 text-primary-foreground" },
   { icon: MessageCircle, label: "Messages", to: "/app/messages", color: "bg-gold-soft text-primary-deep" },
 ];
 
