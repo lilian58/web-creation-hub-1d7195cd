@@ -216,7 +216,11 @@ export default function Messages() {
               </div>
 
               <div className="p-3 lg:p-4 border-t flex items-center gap-2 bg-card shrink-0">
-                <button className="p-2.5 rounded-full hover:bg-muted shrink-0">
+                <button
+                  onClick={() => setShowAttach(true)}
+                  className="p-2.5 rounded-full hover:bg-muted shrink-0"
+                  aria-label="Joindre"
+                >
                   <Paperclip className="w-5 h-5 text-muted-foreground" />
                 </button>
                 <input
@@ -230,6 +234,43 @@ export default function Messages() {
                   <Send className="w-4 h-4" />
                 </button>
               </div>
+
+              {/* Attachment sheet */}
+              {showAttach && (
+                <div
+                  className="fixed inset-0 z-50 bg-black/50 flex items-end md:items-center justify-center"
+                  onClick={() => setShowAttach(false)}
+                >
+                  <div
+                    className="bg-card w-full md:max-w-md rounded-t-3xl md:rounded-3xl p-5 shadow-card animate-in slide-in-from-bottom"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="font-display text-lg font-bold text-primary">Joindre</h3>
+                      <button
+                        onClick={() => setShowAttach(false)}
+                        className="w-8 h-8 rounded-full hover:bg-muted flex items-center justify-center"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                    <div className="grid grid-cols-3 gap-3">
+                      {attachOptions.map((opt) => (
+                        <button
+                          key={opt.label}
+                          onClick={() => setShowAttach(false)}
+                          className="flex flex-col items-center gap-2 p-3 rounded-2xl hover:bg-muted/60 transition"
+                        >
+                          <div className={cn("w-12 h-12 rounded-2xl text-white flex items-center justify-center", opt.color)}>
+                            <opt.icon className="w-5 h-5" />
+                          </div>
+                          <span className="text-xs text-center font-medium leading-tight">{opt.label}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
             </>
           ) : (
             <div className="hidden md:flex flex-1 items-center justify-center text-center p-8">
