@@ -11,8 +11,7 @@ const sections = [
 
 export default function Profil() {
   return (
-    <div className="px-4 lg:px-10 py-6 lg:py-10 max-w-3xl mx-auto space-y-6">
-      <h1 className="hidden lg:block font-display text-4xl font-bold text-primary">Profil</h1>
+    <div className="px-4 md:px-6 lg:px-10 py-6 lg:py-8 max-w-3xl mx-auto space-y-6">
 
       {/* Profile card */}
       <div className="gradient-hero rounded-3xl p-6 lg:p-8 text-primary-foreground shadow-card relative overflow-hidden">
