@@ -65,7 +65,7 @@ export default function Predications() {
                 <span>{s.duration}</span><span>•</span><span>{s.date}</span>
               </div>
             </div>
-          </div>
+          </Link>
         ))}
       </div>
     </div>

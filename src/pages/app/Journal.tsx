@@ -1,4 +1,5 @@
 import { Plus, Calendar, Bookmark, MoreVertical } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const entries = [
   { day: "18", month: "Mai", title: "Gratitude", excerpt: "Seigneur, merci pour cette nouvelle journée. Tu es fidèle..." },
