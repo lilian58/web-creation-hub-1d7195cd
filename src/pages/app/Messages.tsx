@@ -1,5 +1,6 @@
-import { Search, Edit3, Phone, MoreVertical, Mic, Paperclip, Send, Play, ArrowLeft } from "lucide-react";
+import { Search, Edit3, Phone, Video, MoreVertical, Mic, Paperclip, Send, Play, ArrowLeft, Image as ImageIcon, FileText, NotebookPen, MapPin, X } from "lucide-react";
 import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
 const conversations = [
@@ -22,6 +23,16 @@ const messages = [
 
 export default function Messages() {
   const [active, setActive] = useState<typeof conversations[number] | null>(null);
+  const [showAttach, setShowAttach] = useState(false);
+  const navigate = useNavigate();
+
+  const attachOptions = [
+    { icon: ImageIcon, label: "Photo / Vidéo", color: "bg-blue-500" },
+    { icon: FileText, label: "Document PDF", color: "bg-rose-500" },
+    { icon: NotebookPen, label: "Note du Journal", color: "bg-gold" },
+    { icon: Mic, label: "Message vocal", color: "bg-primary" },
+    { icon: MapPin, label: "Position", color: "bg-emerald-500" },
+  ];
 
   return (
     <div className="h-[calc(100dvh-7.5rem)] md:h-[calc(100dvh-5rem)] md:px-6 lg:px-10 md:py-4 lg:py-6 max-w-7xl mx-auto w-full">
@@ -35,9 +46,13 @@ export default function Messages() {
         >
           <div className="p-4 lg:p-6 flex items-center justify-between border-b shrink-0">
             <h2 className="font-display text-xl font-bold text-primary">Conversations</h2>
-            <button className="w-9 h-9 rounded-full gradient-primary text-primary-foreground flex items-center justify-center shadow-glow">
+            <Link
+              to="/app/messages/new"
+              className="w-9 h-9 rounded-full gradient-primary text-primary-foreground flex items-center justify-center shadow-glow"
+              aria-label="Nouvelle conversation"
+            >
               <Edit3 className="w-4 h-4" />
-            </button>
+            </Link>
           </div>
           <div className="px-4 py-3 shrink-0">
             <div className="relative">
@@ -116,12 +131,27 @@ export default function Messages() {
                     {active.online ? "En ligne" : "Hors ligne"}
                   </p>
                 </div>
-                <button className="p-2 rounded-full hover:bg-muted">
+                <button
+                  onClick={() => navigate(`/app/call/audio/${active.id}`)}
+                  className="p-2 rounded-full hover:bg-muted"
+                  aria-label="Appel audio"
+                >
                   <Phone className="w-5 h-5 text-primary" />
                 </button>
-                <button className="p-2 rounded-full hover:bg-muted">
-                  <MoreVertical className="w-5 h-5 text-muted-foreground" />
+                <button
+                  onClick={() => navigate(`/app/call/video/${active.id}`)}
+                  className="p-2 rounded-full hover:bg-muted"
+                  aria-label="Appel vidéo"
+                >
+                  <Video className="w-5 h-5 text-primary" />
                 </button>
+                <Link
+                  to={`/app/contacts/${active.id}`}
+                  className="p-2 rounded-full hover:bg-muted"
+                  aria-label="Profil"
+                >
+                  <MoreVertical className="w-5 h-5 text-muted-foreground" />
+                </Link>
               </div>
 
               <div className="flex-1 overflow-y-auto p-4 lg:p-6 space-y-3 bg-muted/20">
