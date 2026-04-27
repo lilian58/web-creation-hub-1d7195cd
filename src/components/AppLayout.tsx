@@ -27,7 +27,7 @@ export default function AppLayout() {
   ];
 
   const mobileNavItems = navItems.filter(
-    (i) => !["/app/journal", "/app/bibliotheque", "/app/messages", "/app/contacts"].includes(i.to)
+    (i) => !["/app/journal", "/app/bibliotheque", "/app/messages"].includes(i.to)
   ).slice(0, 5);
 
   const titleMap: Record<string, string> = {
