@@ -3,6 +3,7 @@ import { Home, BookOpen, Mic, MessageCircle, User, NotebookPen, Bell, Library, U
 import { cn } from "@/lib/utils";
 import logo from "@/assets/spiritlink-logo.png";
 import { useRole } from "@/hooks/use-role";
+import AccountMenu from "@/components/AccountMenu";
 
 const baseNav = [
   { to: "/app", label: "Accueil", icon: Home, end: true },
@@ -94,19 +95,25 @@ export default function AppLayout() {
             <img src={logo} alt="" className="w-8 h-8" width={32} height={32} />
             <span className="font-display text-lg font-semibold text-primary">{pageTitle}</span>
           </div>
-          <button className="relative p-2 rounded-full hover:bg-muted transition" aria-label="Notifications">
-            <Bell className="w-5 h-5 text-primary" />
-            <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-gold rounded-full" />
-          </button>
+          <div className="flex items-center gap-1">
+            <button className="relative p-2 rounded-full hover:bg-muted transition" aria-label="Notifications">
+              <Bell className="w-5 h-5 text-primary" />
+              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-gold rounded-full" />
+            </button>
+            <AccountMenu />
+          </div>
         </header>
 
         {/* Desktop/tablet header */}
         <header className="hidden md:flex sticky top-0 z-30 bg-background/95 backdrop-blur border-b px-6 lg:px-10 py-4 items-center justify-between">
           <h2 className="font-display text-2xl font-bold text-primary">{pageTitle}</h2>
-          <button className="relative p-2.5 rounded-full hover:bg-muted transition" aria-label="Notifications">
-            <Bell className="w-5 h-5 text-primary" />
-            <span className="absolute top-2 right-2 w-2 h-2 bg-gold rounded-full" />
-          </button>
+          <div className="flex items-center gap-1">
+            <button className="relative p-2.5 rounded-full hover:bg-muted transition" aria-label="Notifications">
+              <Bell className="w-5 h-5 text-primary" />
+              <span className="absolute top-2 right-2 w-2 h-2 bg-gold rounded-full" />
+            </button>
+            <AccountMenu />
+          </div>
         </header>
 
         <main className="flex-1 pb-24 md:pb-6 min-w-0">

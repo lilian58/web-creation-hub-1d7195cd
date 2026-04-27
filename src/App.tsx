@@ -25,6 +25,7 @@ import CallVideo from "./pages/app/CallVideo.tsx";
 import AdminDashboard from "./pages/app/AdminDashboard.tsx";
 import CreatorDashboard from "./pages/app/CreatorDashboard.tsx";
 import Downloads from "./pages/app/Downloads.tsx";
+import Subscription from "./pages/app/Subscription.tsx";
 
 const queryClient = new QueryClient();
 
@@ -54,6 +55,7 @@ const App = () => (
             <Route path="call/audio/:id" element={<CallAudio />} />
             <Route path="call/video/:id" element={<CallVideo />} />
             <Route path="downloads" element={<Downloads />} />
+            <Route path="abonnement" element={<Subscription />} />
             <Route path="admin" element={<AdminDashboard />} />
             <Route path="creator" element={<CreatorDashboard />} />
             <Route path="profil" element={<Profil />} />
