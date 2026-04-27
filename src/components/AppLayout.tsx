@@ -1,11 +1,12 @@
 import { NavLink, Outlet, useLocation } from "react-router-dom";
-import { Home, BookOpen, Mic, MessageCircle, User, NotebookPen, Bell } from "lucide-react";
+import { Home, BookOpen, Mic, MessageCircle, User, NotebookPen, Bell, Library } from "lucide-react";
 import { cn } from "@/lib/utils";
 import logo from "@/assets/spiritlink-logo.png";
 
 const navItems = [
   { to: "/app", label: "Accueil", icon: Home, end: true },
   { to: "/app/bible", label: "Bible", icon: BookOpen },
+  { to: "/app/bibliotheque", label: "Livres", icon: Library },
   { to: "/app/predications", label: "Prédications", icon: Mic },
   { to: "/app/journal", label: "Journal", icon: NotebookPen },
   { to: "/app/messages", label: "Messages", icon: MessageCircle },
@@ -13,15 +14,17 @@ const navItems = [
 ];
 
 // Mobile bottom nav: 5 items max for usability
-const mobileNavItems = navItems.filter((i) => i.to !== "/app/journal");
+const mobileNavItems = navItems.filter((i) => i.to !== "/app/journal" && i.to !== "/app/bibliotheque");
 
 export default function AppLayout() {
   const location = useLocation();
   const titleMap: Record<string, string> = {
     "/app": "Accueil",
     "/app/bible": "Bible",
+    "/app/bibliotheque": "Bibliothèque",
     "/app/predications": "Prédications",
     "/app/journal": "Journal",
+    "/app/journal/new": "Nouvelle note",
     "/app/messages": "Messages",
     "/app/profil": "Profil",
   };

@@ -1,12 +1,12 @@
 import { Link } from "react-router-dom";
-import { BookOpen, Mic, NotebookPen, MessageCircle, Play, ChevronRight } from "lucide-react";
+import { BookOpen, Mic, Library, MessageCircle, Play, ChevronRight } from "lucide-react";
 import verseBg from "@/assets/verse-bg.jpg";
 import preaching from "@/assets/preaching-1.jpg";
 
 const quickAccess = [
   { icon: BookOpen, label: "Bible", to: "/app/bible", color: "bg-primary text-primary-foreground" },
-  { icon: Mic, label: "Prédications", to: "/app/predications", color: "bg-gold-soft text-primary-deep" },
-  { icon: NotebookPen, label: "Journal", to: "/app/journal", color: "bg-primary/90 text-primary-foreground" },
+  { icon: Library, label: "Livres", to: "/app/bibliotheque", color: "bg-gold-soft text-primary-deep" },
+  { icon: Mic, label: "Prédications", to: "/app/predications", color: "bg-primary/90 text-primary-foreground" },
   { icon: MessageCircle, label: "Messages", to: "/app/messages", color: "bg-gold-soft text-primary-deep" },
 ];
 
@@ -70,7 +70,7 @@ export default function Home() {
         </div>
         <div className="space-y-3">
           {sermons.map((s, i) => (
-            <div key={i} className="flex items-center gap-4 bg-card rounded-2xl p-3 shadow-soft hover:shadow-card transition group">
+            <Link to={`/app/predications/${i + 1}`} key={i} className="flex items-center gap-4 bg-card rounded-2xl p-3 shadow-soft hover:shadow-card transition group">
               <div className="relative w-20 h-20 lg:w-28 lg:h-24 rounded-xl overflow-hidden shrink-0">
                 <img src={preaching} alt="" className="w-full h-full object-cover" loading="lazy" width={800} height={600} />
                 <div className="absolute inset-0 bg-primary-deep/30 flex items-center justify-center group-hover:bg-primary-deep/50 transition">
@@ -84,7 +84,7 @@ export default function Home() {
                 <p className="text-sm text-muted-foreground">{s.author}</p>
                 <p className="text-xs text-muted-foreground mt-1">{s.duration}</p>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
       </div>

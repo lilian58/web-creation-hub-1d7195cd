@@ -1,5 +1,6 @@
 import { Search, Filter, Play } from "lucide-react";
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import preaching from "@/assets/preaching-1.jpg";
 
@@ -48,7 +49,7 @@ export default function Predications() {
 
       <div className="grid lg:grid-cols-2 gap-4">
         {sermons.map((s, i) => (
-          <div key={i} className="flex items-center gap-4 bg-card rounded-2xl p-3 shadow-soft hover:shadow-card transition group cursor-pointer">
+          <Link to={`/app/predications/${i + 1}`} key={i} className="flex items-center gap-4 bg-card rounded-2xl p-3 shadow-soft hover:shadow-card transition group cursor-pointer">
             <div className="relative w-20 h-20 lg:w-24 lg:h-24 rounded-xl overflow-hidden shrink-0">
               <img src={preaching} alt="" loading="lazy" width={800} height={600} className="w-full h-full object-cover" />
               <div className="absolute inset-0 bg-primary-deep/30 group-hover:bg-primary-deep/50 transition flex items-center justify-center">
@@ -64,7 +65,7 @@ export default function Predications() {
                 <span>{s.duration}</span><span>•</span><span>{s.date}</span>
               </div>
             </div>
-          </div>
+          </Link>
         ))}
       </div>
     </div>
