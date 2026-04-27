@@ -12,6 +12,9 @@ const navItems = [
   { to: "/app/profil", label: "Profil", icon: User },
 ];
 
+// Mobile bottom nav: 5 items max for usability
+const mobileNavItems = navItems.filter((i) => i.to !== "/app/journal");
+
 export default function AppLayout() {
   const location = useLocation();
   const titleMap: Record<string, string> = {
@@ -26,11 +29,11 @@ export default function AppLayout() {
 
   return (
     <div className="min-h-screen bg-background flex w-full">
-      {/* Desktop sidebar */}
-      <aside className="hidden lg:flex flex-col w-64 bg-sidebar text-sidebar-foreground sticky top-0 h-screen p-6 gap-2">
-        <div className="flex items-center gap-3 mb-8">
-          <img src={logo} alt="SpiritLink" className="w-10 h-10" width={40} height={40} />
-          <div>
+      {/* Sidebar : visible dès md (tablette) */}
+      <aside className="hidden md:flex flex-col w-20 lg:w-64 bg-sidebar text-sidebar-foreground sticky top-0 h-screen p-3 lg:p-6 gap-2 shrink-0">
+        <div className="flex items-center gap-3 mb-8 px-1 lg:px-0 justify-center lg:justify-start">
+          <img src={logo} alt="SpiritLink" className="w-10 h-10 shrink-0" width={40} height={40} />
+          <div className="hidden lg:block">
             <h1 className="font-display text-2xl text-gold leading-none">SpiritLink</h1>
             <p className="text-xs text-sidebar-foreground/70 mt-1">Connectés en esprit</p>
           </div>
@@ -41,29 +44,30 @@ export default function AppLayout() {
               key={item.to}
               to={item.to}
               end={item.end}
+              title={item.label}
               className={({ isActive }) =>
                 cn(
-                  "flex items-center gap-3 px-4 py-3 rounded-xl transition-all",
+                  "flex items-center gap-3 px-3 lg:px-4 py-3 rounded-xl transition-all justify-center lg:justify-start",
                   isActive
                     ? "bg-gold text-sidebar-primary-foreground font-semibold shadow-glow"
                     : "hover:bg-sidebar-accent text-sidebar-foreground/90"
                 )
               }
             >
-              <item.icon className="w-5 h-5" />
-              <span>{item.label}</span>
+              <item.icon className="w-5 h-5 shrink-0" />
+              <span className="hidden lg:inline">{item.label}</span>
             </NavLink>
           ))}
         </nav>
-        <div className="mt-auto text-xs text-sidebar-foreground/60">
+        <div className="mt-auto text-xs text-sidebar-foreground/60 hidden lg:block">
           © 2026 SpiritLink
         </div>
       </aside>
 
       {/* Main */}
       <div className="flex-1 flex flex-col min-w-0">
-        {/* Mobile header */}
-        <header className="lg:hidden sticky top-0 z-30 bg-background/95 backdrop-blur border-b px-4 py-3 flex items-center justify-between">
+        {/* Mobile-only header */}
+        <header className="md:hidden sticky top-0 z-30 bg-background/95 backdrop-blur border-b px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <img src={logo} alt="" className="w-8 h-8" width={32} height={32} />
             <span className="font-display text-lg font-semibold text-primary">{pageTitle}</span>
@@ -74,14 +78,23 @@ export default function AppLayout() {
           </button>
         </header>
 
-        <main className="flex-1 pb-24 lg:pb-6">
+        {/* Desktop/tablet header */}
+        <header className="hidden md:flex sticky top-0 z-30 bg-background/95 backdrop-blur border-b px-6 lg:px-10 py-4 items-center justify-between">
+          <h2 className="font-display text-2xl font-bold text-primary">{pageTitle}</h2>
+          <button className="relative p-2.5 rounded-full hover:bg-muted transition" aria-label="Notifications">
+            <Bell className="w-5 h-5 text-primary" />
+            <span className="absolute top-2 right-2 w-2 h-2 bg-gold rounded-full" />
+          </button>
+        </header>
+
+        <main className="flex-1 pb-24 md:pb-6 min-w-0">
           <Outlet />
         </main>
 
-        {/* Mobile bottom nav */}
-        <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-card border-t shadow-card">
+        {/* Mobile-only bottom nav */}
+        <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-card border-t shadow-card">
           <div className="grid grid-cols-5 max-w-lg mx-auto">
-            {navItems.filter(i => i.to !== "/app/journal").map((item) => (
+            {mobileNavItems.map((item) => (
               <NavLink
                 key={item.to}
                 to={item.to}
@@ -95,7 +108,10 @@ export default function AppLayout() {
               >
                 {({ isActive }) => (
                   <>
-                    <item.icon className={cn("w-5 h-5", isActive && "fill-primary/10")} strokeWidth={isActive ? 2.5 : 2} />
+                    <item.icon
+                      className={cn("w-5 h-5", isActive && "fill-primary/10")}
+                      strokeWidth={isActive ? 2.5 : 2}
+                    />
                     <span>{item.label}</span>
                   </>
                 )}
