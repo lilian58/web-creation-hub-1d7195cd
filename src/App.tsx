@@ -22,6 +22,9 @@ import ContactProfile from "./pages/app/ContactProfile.tsx";
 import NewConversation from "./pages/app/NewConversation.tsx";
 import CallAudio from "./pages/app/CallAudio.tsx";
 import CallVideo from "./pages/app/CallVideo.tsx";
+import AdminDashboard from "./pages/app/AdminDashboard.tsx";
+import CreatorDashboard from "./pages/app/CreatorDashboard.tsx";
+import Downloads from "./pages/app/Downloads.tsx";
 
 const queryClient = new QueryClient();
 
@@ -50,6 +53,9 @@ const App = () => (
             <Route path="contacts/:id" element={<ContactProfile />} />
             <Route path="call/audio/:id" element={<CallAudio />} />
             <Route path="call/video/:id" element={<CallVideo />} />
+            <Route path="downloads" element={<Downloads />} />
+            <Route path="admin" element={<AdminDashboard />} />
+            <Route path="creator" element={<CreatorDashboard />} />
             <Route path="profil" element={<Profil />} />
           </Route>
           <Route path="*" element={<NotFound />} />

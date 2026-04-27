@@ -1,9 +1,10 @@
 import { NavLink, Outlet, useLocation } from "react-router-dom";
-import { Home, BookOpen, Mic, MessageCircle, User, NotebookPen, Bell, Library, Users } from "lucide-react";
+import { Home, BookOpen, Mic, MessageCircle, User, NotebookPen, Bell, Library, Users, ShieldAlert, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import logo from "@/assets/spiritlink-logo.png";
+import { useRole } from "@/hooks/use-role";
 
-const navItems = [
+const baseNav = [
   { to: "/app", label: "Accueil", icon: Home, end: true },
   { to: "/app/bible", label: "Bible", icon: BookOpen },
   { to: "/app/bibliotheque", label: "Livres", icon: Library },
@@ -14,13 +15,21 @@ const navItems = [
   { to: "/app/profil", label: "Profil", icon: User },
 ];
 
-// Mobile bottom nav: Messages devient un bouton flottant — on l'exclut + Journal/Bibliotheque (déjà dans Profil/Accueil)
-const mobileNavItems = navItems.filter(
-  (i) => !["/app/journal", "/app/bibliotheque", "/app/messages"].includes(i.to)
-);
-
 export default function AppLayout() {
   const location = useLocation();
+  const [role] = useRole();
+
+  const navItems = [
+    ...baseNav.slice(0, -1),
+    ...(role === "creator" ? [{ to: "/app/creator", label: "Créateur", icon: Sparkles, end: false }] : []),
+    ...(role === "admin" ? [{ to: "/app/admin", label: "Admin", icon: ShieldAlert, end: false }] : []),
+    baseNav[baseNav.length - 1],
+  ];
+
+  const mobileNavItems = navItems.filter(
+    (i) => !["/app/journal", "/app/bibliotheque", "/app/messages", "/app/contacts"].includes(i.to)
+  ).slice(0, 5);
+
   const titleMap: Record<string, string> = {
     "/app": "Accueil",
     "/app/bible": "Bible",
@@ -31,6 +40,9 @@ export default function AppLayout() {
     "/app/messages": "Messages",
     "/app/messages/new": "Nouvelle conversation",
     "/app/contacts": "Contacts",
+    "/app/downloads": "Téléchargements",
+    "/app/admin": "Admin",
+    "/app/creator": "Créateur",
     "/app/profil": "Profil",
   };
   const pageTitle = titleMap[location.pathname] ?? "SpiritLink";
