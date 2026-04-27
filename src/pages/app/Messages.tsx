@@ -24,8 +24,8 @@ export default function Messages() {
   const [active, setActive] = useState<typeof conversations[number] | null>(null);
 
   return (
-    <div className="md:px-6 lg:px-10 md:py-6 lg:py-8 max-w-7xl mx-auto h-[calc(100vh-9rem)] md:h-[calc(100vh-7rem)]">
-      <div className="grid md:grid-cols-[300px_1fr] lg:grid-cols-[360px_1fr] md:gap-6 h-full">
+    <div className="h-[calc(100dvh-7.5rem)] md:h-[calc(100dvh-5rem)] md:px-6 lg:px-10 md:py-4 lg:py-6 max-w-7xl mx-auto w-full">
+      <div className="grid md:grid-cols-[300px_minmax(0,1fr)] lg:grid-cols-[360px_minmax(0,1fr)] md:gap-6 h-full min-h-0">
         {/* Conversation list — caché sur mobile quand un chat est ouvert */}
         <div
           className={cn(
