@@ -17,6 +17,11 @@ import Bibliotheque from "./pages/app/Bibliotheque.tsx";
 import BookReader from "./pages/app/BookReader.tsx";
 import PredicationPlayer from "./pages/app/PredicationPlayer.tsx";
 import NoteEditor from "./pages/app/NoteEditor.tsx";
+import Contacts from "./pages/app/Contacts.tsx";
+import ContactProfile from "./pages/app/ContactProfile.tsx";
+import NewConversation from "./pages/app/NewConversation.tsx";
+import CallAudio from "./pages/app/CallAudio.tsx";
+import CallVideo from "./pages/app/CallVideo.tsx";
 
 const queryClient = new QueryClient();
 
@@ -40,6 +45,11 @@ const App = () => (
             <Route path="journal/new" element={<NoteEditor />} />
             <Route path="journal/:id" element={<NoteEditor />} />
             <Route path="messages" element={<Messages />} />
+            <Route path="messages/new" element={<NewConversation />} />
+            <Route path="contacts" element={<Contacts />} />
+            <Route path="contacts/:id" element={<ContactProfile />} />
+            <Route path="call/audio/:id" element={<CallAudio />} />
+            <Route path="call/video/:id" element={<CallVideo />} />
             <Route path="profil" element={<Profil />} />
           </Route>
           <Route path="*" element={<NotFound />} />
