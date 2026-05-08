@@ -43,7 +43,7 @@ const writeStored = (user: AuthUser | null) => {
 };
 
 // --- Mode mock (tant qu'aucun backend n'est branché) ------------------------
-const mockUser = (payload: Partial<RegisterPayload> & { role?: Role }): AuthUser => ({
+const mockUser = (payload: { name?: string; email?: string; role?: Role }): AuthUser => ({
   id: crypto.randomUUID(),
   name: payload.name ?? "Sarah Mendès",
   email: payload.email ?? "sarah@spiritlink.app",
