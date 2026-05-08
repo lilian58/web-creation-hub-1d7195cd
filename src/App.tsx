@@ -3,6 +3,8 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { AuthProvider } from "@/context/AuthContext";
+import ProtectedRoute from "@/components/ProtectedRoute";
 import Index from "./pages/Index.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import Auth from "./pages/Auth.tsx";
@@ -35,33 +37,48 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/auth" element={<Auth />} />
-          <Route path="/app" element={<AppLayout />}>
-            <Route index element={<Home />} />
-            <Route path="bible" element={<Bible />} />
-            <Route path="predications" element={<Predications />} />
-            <Route path="predications/:id" element={<PredicationPlayer />} />
-            <Route path="bibliotheque" element={<Bibliotheque />} />
-            <Route path="bibliotheque/:id" element={<BookReader />} />
-            <Route path="journal" element={<Journal />} />
-            <Route path="journal/new" element={<NoteEditor />} />
-            <Route path="journal/:id" element={<NoteEditor />} />
-            <Route path="messages" element={<Messages />} />
-            <Route path="messages/new" element={<NewConversation />} />
-            <Route path="contacts" element={<Contacts />} />
-            <Route path="contacts/:id" element={<ContactProfile />} />
-            <Route path="call/audio/:id" element={<CallAudio />} />
-            <Route path="call/video/:id" element={<CallVideo />} />
-            <Route path="downloads" element={<Downloads />} />
-            <Route path="abonnement" element={<Subscription />} />
-            <Route path="admin" element={<AdminDashboard />} />
-            <Route path="creator" element={<CreatorDashboard />} />
-            <Route path="profil" element={<Profil />} />
-          </Route>
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+        <AuthProvider>
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/auth" element={<Auth />} />
+
+            {/* Toutes les routes /app/* nécessitent une session */}
+            <Route element={<ProtectedRoute />}>
+              <Route path="/app" element={<AppLayout />}>
+                <Route index element={<Home />} />
+                <Route path="bible" element={<Bible />} />
+                <Route path="predications" element={<Predications />} />
+                <Route path="predications/:id" element={<PredicationPlayer />} />
+                <Route path="bibliotheque" element={<Bibliotheque />} />
+                <Route path="bibliotheque/:id" element={<BookReader />} />
+                <Route path="journal" element={<Journal />} />
+                <Route path="journal/new" element={<NoteEditor />} />
+                <Route path="journal/:id" element={<NoteEditor />} />
+                <Route path="messages" element={<Messages />} />
+                <Route path="messages/new" element={<NewConversation />} />
+                <Route path="contacts" element={<Contacts />} />
+                <Route path="contacts/:id" element={<ContactProfile />} />
+                <Route path="call/audio/:id" element={<CallAudio />} />
+                <Route path="call/video/:id" element={<CallVideo />} />
+                <Route path="downloads" element={<Downloads />} />
+                <Route path="abonnement" element={<Subscription />} />
+                <Route path="profil" element={<Profil />} />
+
+                {/* Espace créateur : creator + admin (admin peut publier aussi) */}
+                <Route element={<ProtectedRoute roles={["creator", "admin"]} />}>
+                  <Route path="creator" element={<CreatorDashboard />} />
+                </Route>
+
+                {/* Espace admin : admin uniquement */}
+                <Route element={<ProtectedRoute roles={["admin"]} />}>
+                  <Route path="admin" element={<AdminDashboard />} />
+                </Route>
+              </Route>
+            </Route>
+
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>

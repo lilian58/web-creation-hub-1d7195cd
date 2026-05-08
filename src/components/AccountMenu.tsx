@@ -1,8 +1,8 @@
 import { Menu, User, Crown, BookmarkCheck, Download, Bell, Shield, HelpCircle, LogOut, ChevronRight, ShieldAlert, Sparkles, Settings, CreditCard } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useState } from "react";
-import { useRole } from "@/hooks/use-role";
+import { useAuth } from "@/context/AuthContext";
 import { cn } from "@/lib/utils";
 
 const accountItems = [
@@ -24,9 +24,16 @@ const supportItems = [
 
 export default function AccountMenu({ className }: { className?: string }) {
   const [open, setOpen] = useState(false);
-  const [role] = useRole();
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+  const role = user?.role ?? "user";
 
   const close = () => setOpen(false);
+  const handleLogout = async () => {
+    await logout();
+    close();
+    navigate("/auth", { replace: true });
+  };
 
   const Section = ({ title, items }: { title: string; items: typeof accountItems }) => (
     <div>
@@ -72,12 +79,12 @@ export default function AccountMenu({ className }: { className?: string }) {
         {/* Carte profil */}
         <div className="gradient-hero text-primary-foreground p-6 pt-8">
           <div className="flex items-center gap-3">
-            <div className="w-14 h-14 rounded-full bg-primary-foreground/20 backdrop-blur flex items-center justify-center font-display text-xl font-bold border-2 border-gold">
-              S
+            <div className="w-14 h-14 rounded-full bg-primary-foreground/20 backdrop-blur flex items-center justify-center font-display text-xl font-bold border-2 border-gold uppercase">
+              {(user?.name ?? "?").charAt(0)}
             </div>
             <div className="flex-1 min-w-0">
-              <h3 className="font-display text-lg font-bold truncate">Sarah Mendès</h3>
-              <p className="text-xs text-primary-foreground/80 truncate">sarah@spiritlink.app</p>
+              <h3 className="font-display text-lg font-bold truncate">{user?.name ?? "Invité"}</h3>
+              <p className="text-xs text-primary-foreground/80 truncate">{user?.email ?? "—"}</p>
             </div>
             <span className="px-2.5 py-1 bg-gold text-primary-deep rounded-full text-[10px] font-bold uppercase flex items-center gap-1">
               <Crown className="w-3 h-3" /> {role}
@@ -107,13 +114,13 @@ export default function AccountMenu({ className }: { className?: string }) {
           <Section title="Contenu" items={contentItems} />
           <Section title="Support" items={supportItems} />
 
-          <Link
-            to="/"
-            onClick={close}
+          <button
+            type="button"
+            onClick={handleLogout}
             className="w-full bg-card border border-destructive/30 text-destructive rounded-2xl py-3.5 flex items-center justify-center gap-2 font-semibold hover:bg-destructive/5 transition"
           >
             <LogOut className="w-4 h-4" /> Se déconnecter
-          </Link>
+          </button>
 
           <p className="text-center text-[10px] text-muted-foreground pb-4">
             SpiritLink · v1.0.0
