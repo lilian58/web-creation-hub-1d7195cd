@@ -1,8 +1,8 @@
 import { Menu, User, Crown, BookmarkCheck, Download, Bell, Shield, HelpCircle, LogOut, ChevronRight, ShieldAlert, Sparkles, Settings, CreditCard } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useState } from "react";
-import { useRole } from "@/hooks/use-role";
+import { useAuth } from "@/context/AuthContext";
 import { cn } from "@/lib/utils";
 
 const accountItems = [
@@ -24,9 +24,16 @@ const supportItems = [
 
 export default function AccountMenu({ className }: { className?: string }) {
   const [open, setOpen] = useState(false);
-  const [role] = useRole();
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+  const role = user?.role ?? "user";
 
   const close = () => setOpen(false);
+  const handleLogout = async () => {
+    await logout();
+    close();
+    navigate("/auth", { replace: true });
+  };
 
   const Section = ({ title, items }: { title: string; items: typeof accountItems }) => (
     <div>
