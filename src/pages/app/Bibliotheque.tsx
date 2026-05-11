@@ -1,14 +1,17 @@
 import { Search, BookOpen as BookIcon, Star, Download } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import cover1 from "@/assets/book-cover-1.jpg";
 import cover2 from "@/assets/book-cover-2.jpg";
 import cover3 from "@/assets/book-cover-3.jpg";
+import { useUploadedBooks } from "@/lib/content-store";
 
 const categories = ["Tous", "Foi", "Prière", "Spiritualité", "Témoignage", "Études"];
 
-const books = [
+const fallbackCovers = [cover2, cover3, cover1];
+
+const baseBooks = [
   { id: "1", title: "La grâce qui transforme", author: "Pasteur Daniel K.", cover: cover2, rating: 4.8, pages: 248, downloads: "12k" },
   { id: "2", title: "Vivre dans la présence", author: "Esther Mendès", cover: cover3, rating: 4.6, pages: 192, downloads: "8.4k" },
   { id: "3", title: "Confiance & abandon", author: "Prophète Samuel", cover: cover1, rating: 4.9, pages: 320, downloads: "21k" },
@@ -19,6 +22,22 @@ const books = [
 
 export default function Bibliotheque() {
   const [cat, setCat] = useState("Tous");
+  const uploaded = useUploadedBooks();
+  const books = useMemo(
+    () => [
+      ...uploaded.map((b, i) => ({
+        id: b.id,
+        title: b.title,
+        author: b.author,
+        cover: b.coverUrl || fallbackCovers[i % fallbackCovers.length],
+        rating: 5,
+        pages: 0,
+        downloads: "Nouveau",
+      })),
+      ...baseBooks,
+    ],
+    [uploaded]
+  );
 
   return (
     <div className="px-4 md:px-6 lg:px-10 py-6 lg:py-8 max-w-6xl mx-auto space-y-6">
