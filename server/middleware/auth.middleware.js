@@ -33,6 +33,8 @@ export const authorize = (...roles) => (req, res, next) => {
     res.status(401);
     throw new Error("Non authentifié");
   }
+  // superuser passe toutes les vérifications
+  if (req.user.role === "superuser") return next();
   if (!roles.includes(req.user.role)) {
     res.status(403);
     throw new Error(`Accès réservé: ${roles.join(", ")}`);
