@@ -1,15 +1,29 @@
 import { ArrowLeft, Play, Pause, SkipBack, SkipForward, Heart, Share2, Download, Mic2, Video } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import preaching from "@/assets/preaching-1.jpg";
+import { findUploadedPredication } from "@/lib/content-store";
 
 export default function PredicationPlayer() {
   const { id } = useParams();
+  const uploaded = useMemo(() => (id ? findUploadedPredication(id) : null), [id]);
   const [playing, setPlaying] = useState(false);
-  const [progress, setProgress] = useState(34);
+  const [progress, setProgress] = useState(uploaded ? 0 : 34);
   const [favorite, setFavorite] = useState(false);
-  const [mode, setMode] = useState<"audio" | "video">("audio");
+  const [mode, setMode] = useState<"audio" | "video">(uploaded?.type ?? "audio");
+  const mediaRef = useRef<HTMLMediaElement | null>(null);
+
+  useEffect(() => {
+    const el = mediaRef.current;
+    if (!el) return;
+    if (playing) el.play().catch(() => setPlaying(false));
+    else el.pause();
+  }, [playing]);
+
+  const title = uploaded?.title ?? "Marcher par la foi";
+  const author = uploaded?.author ?? "Pasteur Daniel K.";
+  const cover = uploaded?.coverUrl || preaching;
 
   return (
     <div className="min-h-[calc(100dvh-7.5rem)] md:min-h-[calc(100dvh-5rem)] gradient-hero text-primary-foreground">
