@@ -1,21 +1,37 @@
 import { Search, Filter, Play } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import preaching from "@/assets/preaching-1.jpg";
+import { useUploadedPredications } from "@/lib/content-store";
 
 const categories = ["Toutes", "Foi", "Prière", "Adoration", "Enseignement", "Témoignage"];
-const sermons = [
-  { title: "Marcher par la foi et non par la vue", author: "Pasteur Daniel", duration: "28 min", date: "Mai" },
-  { title: "Dieu a un plan pour ta vie", author: "Prophète Samuel", duration: "32 min", date: "3 j" },
-  { title: "Le pouvoir de la prière", author: "Pasteure Esther", duration: "21 min", date: "Hier" },
-  { title: "Vivre dans la présence de Dieu", author: "Pasteur Daniel", duration: "26 min", date: "Mer" },
-  { title: "L'amour comme fondement", author: "Pasteur Jean", duration: "35 min", date: "Lun" },
-  { title: "La grâce qui transforme", author: "Pasteure Marie", duration: "29 min", date: "Dim" },
+const baseSermons = [
+  { id: "s-1", title: "Marcher par la foi et non par la vue", author: "Pasteur Daniel", duration: "28 min", date: "Mai", cover: preaching },
+  { id: "s-2", title: "Dieu a un plan pour ta vie", author: "Prophète Samuel", duration: "32 min", date: "3 j", cover: preaching },
+  { id: "s-3", title: "Le pouvoir de la prière", author: "Pasteure Esther", duration: "21 min", date: "Hier", cover: preaching },
+  { id: "s-4", title: "Vivre dans la présence de Dieu", author: "Pasteur Daniel", duration: "26 min", date: "Mer", cover: preaching },
+  { id: "s-5", title: "L'amour comme fondement", author: "Pasteur Jean", duration: "35 min", date: "Lun", cover: preaching },
+  { id: "s-6", title: "La grâce qui transforme", author: "Pasteure Marie", duration: "29 min", date: "Dim", cover: preaching },
 ];
 
 export default function Predications() {
   const [cat, setCat] = useState("Toutes");
+  const uploaded = useUploadedPredications();
+  const sermons = useMemo(
+    () => [
+      ...uploaded.map((p) => ({
+        id: p.id,
+        title: p.title,
+        author: p.author,
+        duration: p.type === "video" ? "Vidéo" : "Audio",
+        date: "Nouveau",
+        cover: p.coverUrl || preaching,
+      })),
+      ...baseSermons,
+    ],
+    [uploaded]
+  );
   return (
     <div className="px-4 md:px-6 lg:px-10 py-6 lg:py-8 max-w-6xl mx-auto space-y-6">
       <div className="flex items-center justify-end">
