@@ -1,13 +1,17 @@
-import { Upload, Mic, BookOpen, Eye, Heart, Users as UsersIcon, DollarSign, Plus, MoreVertical, Image as ImageIcon, FileAudio, FileVideo, FileText, X, TrendingUp } from "lucide-react";
-import { useState } from "react";
+import { Upload, Mic, BookOpen, Eye, Heart, Users as UsersIcon, DollarSign, Plus, MoreVertical, Image as ImageIcon, FileAudio, FileVideo, FileText, X, TrendingUp, Trash2, CheckCircle2 } from "lucide-react";
+import { useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
-
-const myContent = [
-  { id: 1, title: "La grâce qui transforme", type: "Audio", views: 1247, likes: 89, status: "publié" },
-  { id: 2, title: "Vivre par la foi — Tome 1", type: "Livre", views: 532, likes: 42, status: "publié" },
-  { id: 3, title: "Méditation matinale #12", type: "Vidéo", views: 0, likes: 0, status: "brouillon" },
-  { id: 4, title: "Le pouvoir de la prière", type: "Audio", views: 2841, likes: 213, status: "publié" },
-];
+import { useAuth } from "@/context/AuthContext";
+import { toast } from "@/hooks/use-toast";
+import {
+  addBook,
+  addPredication,
+  deleteUploadedBook,
+  deleteUploadedPredication,
+  useUploadedBooks,
+  useUploadedPredications,
+} from "@/lib/content-store";
 
 const subscribers = [
   { id: 1, name: "Sarah M.", since: "Il y a 2 mois" },
@@ -17,16 +21,89 @@ const subscribers = [
   { id: 5, name: "Marie L.", since: "Il y a 4 jours" },
 ];
 
-const stats = [
-  { label: "Vues totales", value: "14 632", icon: Eye, color: "from-primary to-primary-glow" },
-  { label: "Abonnés", value: "847", icon: UsersIcon, color: "from-amber-500 to-orange-500" },
-  { label: "J'aime", value: "1 209", icon: Heart, color: "from-rose-500 to-pink-500" },
-  { label: "Revenus", value: "320 €", icon: DollarSign, color: "from-emerald-500 to-teal-500" },
-];
+type UploadType = "audio" | "video" | "book";
+
+const acceptForType: Record<UploadType, string> = {
+  audio: "audio/*",
+  video: "video/*",
+  book: ".pdf,.epub,application/pdf,application/epub+zip",
+};
 
 export default function CreatorDashboard() {
+  const { user } = useAuth();
+  const books = useUploadedBooks();
+  const predications = useUploadedPredications();
+
   const [showUpload, setShowUpload] = useState(false);
-  const [type, setType] = useState<"audio" | "video" | "book">("audio");
+  const [type, setType] = useState<UploadType>("audio");
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [category, setCategory] = useState("Foi");
+  const [file, setFile] = useState<File | null>(null);
+  const [cover, setCover] = useState<File | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+
+  const myContent = useMemo(() => {
+    const b = books.map((it) => ({
+      id: it.id,
+      title: it.title,
+      type: "Livre" as const,
+      kind: "book" as const,
+    }));
+    const p = predications.map((it) => ({
+      id: it.id,
+      title: it.title,
+      type: it.type === "video" ? ("Vidéo" as const) : ("Audio" as const),
+      kind: it.type,
+    }));
+    return [...p, ...b];
+  }, [books, predications]);
+
+  const stats = [
+    { label: "Publications", value: String(myContent.length), icon: Eye, color: "from-primary to-primary-glow" },
+    { label: "Abonnés", value: "—", icon: UsersIcon, color: "from-amber-500 to-orange-500" },
+    { label: "J'aime", value: "—", icon: Heart, color: "from-rose-500 to-pink-500" },
+    { label: "Revenus", value: "—", icon: DollarSign, color: "from-emerald-500 to-teal-500" },
+  ];
+
+  const reset = () => {
+    setTitle(""); setDescription(""); setCategory("Foi");
+    setFile(null); setCover(null); setType("audio");
+  };
+
+  const handleSubmit = async () => {
+    if (!title.trim()) return toast({ title: "Titre requis", variant: "destructive" });
+    if (!file) return toast({ title: "Fichier requis", description: "Sélectionne un fichier à publier.", variant: "destructive" });
+
+    setSubmitting(true);
+    try {
+      if (type === "book") {
+        await addBook({
+          title, author: user?.name ?? "Anonyme",
+          description, category, file, cover, authorId: user?.id,
+        });
+      } else {
+        await addPredication({
+          title, type, description, category,
+          file, cover, author: user?.name ?? "Anonyme", authorId: user?.id,
+        });
+      }
+      toast({ title: "Publication réussie", description: title });
+      reset();
+      setShowUpload(false);
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "Échec de la publication";
+      toast({ title: "Erreur", description: msg, variant: "destructive" });
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleDelete = (kind: "book" | "audio" | "video", id: string) => {
+    if (kind === "book") deleteUploadedBook(id);
+    else deleteUploadedPredication(id);
+    toast({ title: "Publication supprimée" });
+  };
 
   return (
     <div className="px-4 md:px-6 lg:px-10 py-6 lg:py-8 max-w-7xl mx-auto space-y-6">
@@ -54,7 +131,7 @@ export default function CreatorDashboard() {
             <div className="flex items-baseline justify-between gap-2 mt-1">
               <span className="font-display text-xl md:text-2xl font-bold text-foreground">{s.value}</span>
               <span className="text-xs font-semibold text-emerald-600 flex items-center gap-0.5">
-                <TrendingUp className="w-3 h-3" /> +8%
+                <TrendingUp className="w-3 h-3" /> +0%
               </span>
             </div>
           </div>
@@ -67,32 +144,41 @@ export default function CreatorDashboard() {
           <h3 className="font-display text-lg font-bold text-primary">Mes publications</h3>
           <span className="text-xs text-muted-foreground">{myContent.length} contenus</span>
         </div>
-        <div className="divide-y">
-          {myContent.map((c) => (
-            <div key={c.id} className="flex items-center gap-3 p-4">
-              <div className="w-12 h-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
-                {c.type === "Livre" ? <BookOpen className="w-5 h-5" /> : c.type === "Vidéo" ? <FileVideo className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="font-semibold text-foreground truncate">{c.title}</p>
-                <div className="flex items-center gap-3 mt-0.5 text-xs text-muted-foreground">
-                  <span>{c.type}</span>
-                  <span className="flex items-center gap-1"><Eye className="w-3 h-3" /> {c.views}</span>
-                  <span className="flex items-center gap-1"><Heart className="w-3 h-3" /> {c.likes}</span>
+        {myContent.length === 0 ? (
+          <div className="p-10 text-center">
+            <Upload className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
+            <p className="text-sm text-muted-foreground">Aucune publication pour le moment.</p>
+            <button onClick={() => setShowUpload(true)} className="mt-4 inline-flex items-center gap-2 px-5 py-2.5 gradient-primary text-primary-foreground rounded-full font-semibold shadow-glow">
+              <Plus className="w-4 h-4" /> Publier ma première création
+            </button>
+          </div>
+        ) : (
+          <div className="divide-y">
+            {myContent.map((c) => {
+              const href = c.kind === "book" ? `/app/bibliotheque/${c.id}` : `/app/predications/${c.id}`;
+              return (
+                <div key={`${c.kind}-${c.id}`} className="flex items-center gap-3 p-4">
+                  <Link to={href} className="w-12 h-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                    {c.kind === "book" ? <BookOpen className="w-5 h-5" /> : c.kind === "video" ? <FileVideo className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
+                  </Link>
+                  <Link to={href} className="flex-1 min-w-0">
+                    <p className="font-semibold text-foreground truncate">{c.title}</p>
+                    <p className="mt-0.5 text-xs text-muted-foreground">{c.type}</p>
+                  </Link>
+                  <span className="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase bg-emerald-500/15 text-emerald-600 inline-flex items-center gap-1">
+                    <CheckCircle2 className="w-3 h-3" /> publié
+                  </span>
+                  <button onClick={() => handleDelete(c.kind, c.id)} className="p-2 rounded-full hover:bg-destructive/10 text-destructive" aria-label="Supprimer">
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                  <button className="p-2 rounded-full hover:bg-muted">
+                    <MoreVertical className="w-4 h-4 text-muted-foreground" />
+                  </button>
                 </div>
-              </div>
-              <span className={cn(
-                "px-2.5 py-1 rounded-full text-[10px] font-bold uppercase",
-                c.status === "publié" ? "bg-emerald-500/15 text-emerald-600" : "bg-amber-500/15 text-amber-600"
-              )}>
-                {c.status}
-              </span>
-              <button className="p-2 rounded-full hover:bg-muted">
-                <MoreVertical className="w-4 h-4 text-muted-foreground" />
-              </button>
-            </div>
-          ))}
-        </div>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {/* Abonnés */}
@@ -127,7 +213,7 @@ export default function CreatorDashboard() {
       {showUpload && (
         <div
           className="fixed inset-0 z-50 bg-black/60 flex items-end md:items-center justify-center p-0 md:p-4"
-          onClick={() => setShowUpload(false)}
+          onClick={() => !submitting && setShowUpload(false)}
         >
           <div
             className="bg-card w-full md:max-w-lg rounded-t-3xl md:rounded-3xl p-6 shadow-card max-h-[90dvh] overflow-y-auto"
@@ -135,7 +221,7 @@ export default function CreatorDashboard() {
           >
             <div className="flex items-center justify-between mb-5">
               <h3 className="font-display text-xl font-bold text-primary">Nouvelle publication</h3>
-              <button onClick={() => setShowUpload(false)} className="w-8 h-8 rounded-full hover:bg-muted flex items-center justify-center">
+              <button onClick={() => setShowUpload(false)} disabled={submitting} className="w-8 h-8 rounded-full hover:bg-muted flex items-center justify-center">
                 <X className="w-4 h-4" />
               </button>
             </div>
@@ -148,7 +234,7 @@ export default function CreatorDashboard() {
               ] as const).map((t) => (
                 <button
                   key={t.id}
-                  onClick={() => setType(t.id)}
+                  onClick={() => { setType(t.id); setFile(null); }}
                   className={cn(
                     "flex flex-col items-center gap-2 p-4 rounded-2xl border-2 transition",
                     type === t.id ? "border-primary bg-primary/5" : "border-transparent bg-muted/40"
@@ -162,33 +248,75 @@ export default function CreatorDashboard() {
 
             <label className="block border-2 border-dashed border-primary/30 rounded-2xl p-6 text-center cursor-pointer hover:bg-primary/5 transition mb-4">
               <Upload className="w-8 h-8 text-primary mx-auto mb-2" />
-              <p className="text-sm font-semibold text-foreground">Glisser le fichier ici</p>
-              <p className="text-xs text-muted-foreground mt-1">ou clique pour parcourir</p>
-              <input type="file" className="hidden" />
+              <p className="text-sm font-semibold text-foreground">
+                {file ? file.name : "Glisser le fichier ici"}
+              </p>
+              <p className="text-xs text-muted-foreground mt-1">
+                {file ? `${(file.size / (1024 * 1024)).toFixed(1)} Mo` : "ou clique pour parcourir"}
+              </p>
+              <input
+                type="file"
+                accept={acceptForType[type]}
+                className="hidden"
+                onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+              />
             </label>
 
             <div className="space-y-3">
-              <input placeholder="Titre" className="w-full h-11 px-4 bg-muted rounded-xl text-sm focus:outline-none" />
-              <textarea placeholder="Description / verset associé..." rows={3} className="w-full px-4 py-3 bg-muted rounded-xl text-sm focus:outline-none resize-none" />
+              <input
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="Titre"
+                className="w-full h-11 px-4 bg-muted rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+              />
+              <textarea
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="Description / verset associé..."
+                rows={3}
+                className="w-full px-4 py-3 bg-muted rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 resize-none"
+              />
               <div className="flex items-center gap-3">
-                <button className="flex-1 flex items-center justify-center gap-2 h-11 rounded-xl border text-sm font-semibold hover:bg-muted">
-                  <ImageIcon className="w-4 h-4" /> Couverture
-                </button>
-                <select className="flex-1 h-11 px-3 bg-muted rounded-xl text-sm focus:outline-none">
-                  <option>Catégorie : Foi</option>
+                <label className="flex-1 flex items-center justify-center gap-2 h-11 rounded-xl border text-sm font-semibold hover:bg-muted cursor-pointer">
+                  <ImageIcon className="w-4 h-4" />
+                  <span className="truncate">{cover ? cover.name : "Couverture"}</span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => setCover(e.target.files?.[0] ?? null)}
+                  />
+                </label>
+                <select
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value)}
+                  className="flex-1 h-11 px-3 bg-muted rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+                >
+                  <option>Foi</option>
                   <option>Prière</option>
                   <option>Évangélisation</option>
                   <option>Famille</option>
+                  <option>Adoration</option>
+                  <option>Enseignement</option>
+                  <option>Témoignage</option>
                 </select>
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-3 mt-5">
-              <button onClick={() => setShowUpload(false)} className="h-12 rounded-full border font-semibold">
-                Brouillon
+              <button
+                onClick={() => setShowUpload(false)}
+                disabled={submitting}
+                className="h-12 rounded-full border font-semibold hover:bg-muted disabled:opacity-50"
+              >
+                Annuler
               </button>
-              <button onClick={() => setShowUpload(false)} className="h-12 rounded-full gradient-primary text-primary-foreground font-semibold shadow-glow">
-                Publier
+              <button
+                onClick={handleSubmit}
+                disabled={submitting}
+                className="h-12 rounded-full gradient-primary text-primary-foreground font-semibold shadow-glow disabled:opacity-60"
+              >
+                {submitting ? "Publication..." : "Publier"}
               </button>
             </div>
           </div>

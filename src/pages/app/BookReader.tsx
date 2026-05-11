@@ -1,7 +1,8 @@
-import { ArrowLeft, ChevronLeft, ChevronRight, Bookmark, Type, Settings2, List } from "lucide-react";
-import { useState } from "react";
+import { ArrowLeft, ChevronLeft, ChevronRight, Bookmark, Type, List, Download } from "lucide-react";
+import { useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { findUploadedBook } from "@/lib/content-store";
 
 const chapters = [
   { num: 1, title: "Le commencement", text: `Au commencement de notre marche spirituelle, il convient de poser des fondations solides. La foi n'est pas une émotion passagère, mais une décision quotidienne de placer notre confiance en Celui qui nous a aimés le premier.\n\nQuand nous regardons en arrière, nous voyons combien Dieu a été fidèle. Chaque épreuve traversée porte la marque de Sa grâce. Chaque larme versée a été recueillie dans Sa coupe.\n\n« L'Éternel est mon berger, je ne manquerai de rien. »\n\nCette parole, gravée dans nos cœurs depuis l'enfance pour certains, prend tout son sens lorsque nous traversons la vallée. Le berger ne quitte jamais ses brebis. Il les conduit, les protège, les nourrit.` },
@@ -11,13 +12,18 @@ const chapters = [
 
 export default function BookReader() {
   const { id } = useParams();
+  const uploaded = useMemo(() => (id ? findUploadedBook(id) : null), [id]);
   const [chapterIdx, setChapterIdx] = useState(0);
   const [fontSize, setFontSize] = useState(17);
   const [showTOC, setShowTOC] = useState(false);
   const [bookmarked, setBookmarked] = useState(false);
 
   const chapter = chapters[chapterIdx];
-  const progress = ((chapterIdx + 1) / chapters.length) * 100;
+  const progress = uploaded ? 0 : ((chapterIdx + 1) / chapters.length) * 100;
+  const headerTitle = uploaded?.title ?? "La grâce qui transforme";
+  const headerSub = uploaded
+    ? `${uploaded.author} · ${uploaded.format.toUpperCase()}`
+    : `Chapitre ${chapter.num} · ${chapter.title}`;
 
   return (
     <div className="min-h-[calc(100dvh-7.5rem)] md:min-h-[calc(100dvh-5rem)] bg-[hsl(40_30%_98%)]">
@@ -28,8 +34,8 @@ export default function BookReader() {
             <ArrowLeft className="w-5 h-5 text-primary" />
           </Link>
           <div className="flex-1 min-w-0">
-            <h2 className="font-display font-semibold text-primary truncate">La grâce qui transforme</h2>
-            <p className="text-xs text-muted-foreground">Chapitre {chapter.num} · {chapter.title}</p>
+            <h2 className="font-display font-semibold text-primary truncate">{headerTitle}</h2>
+            <p className="text-xs text-muted-foreground truncate">{headerSub}</p>
           </div>
           <button onClick={() => setShowTOC(!showTOC)} className="p-2 rounded-full hover:bg-muted" aria-label="Sommaire">
             <List className="w-5 h-5 text-primary" />
@@ -66,16 +72,42 @@ export default function BookReader() {
       )}
 
       {/* Reading area */}
-      <article className="max-w-3xl mx-auto px-6 md:px-10 py-10 md:py-16">
-        <p className="text-sm uppercase tracking-widest text-gold font-semibold mb-3">Chapitre {chapter.num}</p>
-        <h1 className="font-display text-3xl md:text-5xl font-bold text-primary mb-8">{chapter.title}</h1>
-        <div
-          className="font-display text-foreground leading-relaxed whitespace-pre-line"
-          style={{ fontSize: `${fontSize}px`, lineHeight: 1.75 }}
-        >
-          {chapter.text}
+      {uploaded ? (
+        <div className="max-w-5xl mx-auto px-2 md:px-6 py-6">
+          {uploaded.format === "pdf" ? (
+            <iframe
+              src={uploaded.fileUrl}
+              title={uploaded.title}
+              className="w-full h-[80dvh] rounded-2xl border bg-card shadow-soft"
+            />
+          ) : (
+            <div className="bg-card rounded-2xl shadow-soft p-10 text-center">
+              <p className="font-display text-xl font-semibold text-primary mb-2">{uploaded.title}</p>
+              <p className="text-sm text-muted-foreground mb-6">
+                Les fichiers EPUB ne sont pas affichés en aperçu. Télécharge le livre pour le lire dans ton lecteur.
+              </p>
+              <a
+                href={uploaded.fileUrl}
+                download={`${uploaded.title}.epub`}
+                className="inline-flex items-center gap-2 px-6 py-3 gradient-primary text-primary-foreground rounded-full font-semibold shadow-glow"
+              >
+                <Download className="w-4 h-4" /> Télécharger l'EPUB
+              </a>
+            </div>
+          )}
         </div>
-      </article>
+      ) : (
+        <article className="max-w-3xl mx-auto px-6 md:px-10 py-10 md:py-16">
+          <p className="text-sm uppercase tracking-widest text-gold font-semibold mb-3">Chapitre {chapter.num}</p>
+          <h1 className="font-display text-3xl md:text-5xl font-bold text-primary mb-8">{chapter.title}</h1>
+          <div
+            className="font-display text-foreground leading-relaxed whitespace-pre-line"
+            style={{ fontSize: `${fontSize}px`, lineHeight: 1.75 }}
+          >
+            {chapter.text}
+          </div>
+        </article>
+      )}
 
       {/* Footer controls */}
       <div className="sticky bottom-20 md:bottom-4 z-20">
