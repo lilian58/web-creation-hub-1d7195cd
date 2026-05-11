@@ -72,16 +72,42 @@ export default function BookReader() {
       )}
 
       {/* Reading area */}
-      <article className="max-w-3xl mx-auto px-6 md:px-10 py-10 md:py-16">
-        <p className="text-sm uppercase tracking-widest text-gold font-semibold mb-3">Chapitre {chapter.num}</p>
-        <h1 className="font-display text-3xl md:text-5xl font-bold text-primary mb-8">{chapter.title}</h1>
-        <div
-          className="font-display text-foreground leading-relaxed whitespace-pre-line"
-          style={{ fontSize: `${fontSize}px`, lineHeight: 1.75 }}
-        >
-          {chapter.text}
+      {uploaded ? (
+        <div className="max-w-5xl mx-auto px-2 md:px-6 py-6">
+          {uploaded.format === "pdf" ? (
+            <iframe
+              src={uploaded.fileUrl}
+              title={uploaded.title}
+              className="w-full h-[80dvh] rounded-2xl border bg-card shadow-soft"
+            />
+          ) : (
+            <div className="bg-card rounded-2xl shadow-soft p-10 text-center">
+              <p className="font-display text-xl font-semibold text-primary mb-2">{uploaded.title}</p>
+              <p className="text-sm text-muted-foreground mb-6">
+                Les fichiers EPUB ne sont pas affichés en aperçu. Télécharge le livre pour le lire dans ton lecteur.
+              </p>
+              <a
+                href={uploaded.fileUrl}
+                download={`${uploaded.title}.epub`}
+                className="inline-flex items-center gap-2 px-6 py-3 gradient-primary text-primary-foreground rounded-full font-semibold shadow-glow"
+              >
+                <Download className="w-4 h-4" /> Télécharger l'EPUB
+              </a>
+            </div>
+          )}
         </div>
-      </article>
+      ) : (
+        <article className="max-w-3xl mx-auto px-6 md:px-10 py-10 md:py-16">
+          <p className="text-sm uppercase tracking-widest text-gold font-semibold mb-3">Chapitre {chapter.num}</p>
+          <h1 className="font-display text-3xl md:text-5xl font-bold text-primary mb-8">{chapter.title}</h1>
+          <div
+            className="font-display text-foreground leading-relaxed whitespace-pre-line"
+            style={{ fontSize: `${fontSize}px`, lineHeight: 1.75 }}
+          >
+            {chapter.text}
+          </div>
+        </article>
+      )}
 
       {/* Footer controls */}
       <div className="sticky bottom-20 md:bottom-4 z-20">
