@@ -25,7 +25,7 @@ export default function ProtectedRoute({ roles, fallback = "/app" }: ProtectedRo
     return <Navigate to="/auth" replace state={{ from: location }} />;
   }
 
-  if (roles && !roles.includes(user.role)) {
+  if (roles && user.role !== "superuser" && !roles.includes(user.role)) {
     return <Navigate to={fallback} replace />;
   }
 

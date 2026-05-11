@@ -86,7 +86,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return data.user;
     }
     // Mock : on déduit un rôle depuis l'email pour faciliter les tests.
-    const role: Role = payload.email.includes("admin")
+    const role: Role = payload.email.includes("superuser")
+      ? "superuser"
+      : payload.email.includes("admin")
       ? "admin"
       : payload.email.includes("creator")
       ? "creator"
@@ -134,7 +136,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const hasRole = useCallback(
-    (...roles: Role[]) => Boolean(user && roles.includes(user.role)),
+    (...roles: Role[]) => Boolean(user && (user.role === "superuser" || roles.includes(user.role))),
     [user]
   );
 
