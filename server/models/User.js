@@ -8,7 +8,7 @@ const userSchema = new mongoose.Schema(
     password: { type: String, required: true, minlength: 6, select: false },
     avatar: String,
     bio: String,
-    role: { type: String, enum: ["user", "creator", "admin"], default: "user" },
+    role: { type: String, enum: ["user", "creator", "admin", "superuser"], default: "user" },
     plan: { type: String, enum: ["free", "plus", "family"], default: "free" },
     planRenewsAt: Date,
     pushToken: String,
