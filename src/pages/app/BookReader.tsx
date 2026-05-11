@@ -34,8 +34,8 @@ export default function BookReader() {
             <ArrowLeft className="w-5 h-5 text-primary" />
           </Link>
           <div className="flex-1 min-w-0">
-            <h2 className="font-display font-semibold text-primary truncate">La grâce qui transforme</h2>
-            <p className="text-xs text-muted-foreground">Chapitre {chapter.num} · {chapter.title}</p>
+            <h2 className="font-display font-semibold text-primary truncate">{headerTitle}</h2>
+            <p className="text-xs text-muted-foreground truncate">{headerSub}</p>
           </div>
           <button onClick={() => setShowTOC(!showTOC)} className="p-2 rounded-full hover:bg-muted" aria-label="Sommaire">
             <List className="w-5 h-5 text-primary" />
