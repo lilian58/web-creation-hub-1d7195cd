@@ -1,4 +1,4 @@
-export type Role = "user" | "creator" | "admin";
+export type Role = "user" | "creator" | "admin" | "superuser";
 
 export type Plan = "free" | "plus" | "family";
 

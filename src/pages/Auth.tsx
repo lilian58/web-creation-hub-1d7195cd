@@ -168,7 +168,29 @@ export default function Auth() {
             Continuer avec Google
           </Button>
 
-          <p className="text-center text-sm text-muted-foreground mt-8">
+          <div className="mt-6">
+            <Button
+              type="button"
+              variant="ghost"
+              className="w-full h-10 text-xs text-muted-foreground hover:text-primary"
+              onClick={async () => {
+                setSubmitting(true);
+                try {
+                  await login({ email: "superuser@test.com", password: "password" });
+                  toast({ title: "Super user connecté 🚀" });
+                  navigate(from, { replace: true });
+                } catch {
+                  toast({ title: "Erreur", variant: "destructive" });
+                } finally {
+                  setSubmitting(false);
+                }
+              }}
+            >
+              🧪 Connexion Super User (test)
+            </Button>
+          </div>
+
+          <p className="text-center text-sm text-muted-foreground mt-6">
             {mode === "signin" ? "Pas encore de compte ?" : "Déjà inscrit ?"}{" "}
             <button
               type="button"
