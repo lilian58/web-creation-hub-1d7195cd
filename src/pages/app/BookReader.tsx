@@ -1,7 +1,8 @@
-import { ArrowLeft, ChevronLeft, ChevronRight, Bookmark, Type, Settings2, List } from "lucide-react";
-import { useState } from "react";
+import { ArrowLeft, ChevronLeft, ChevronRight, Bookmark, Type, List, Download } from "lucide-react";
+import { useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { findUploadedBook } from "@/lib/content-store";
 
 const chapters = [
   { num: 1, title: "Le commencement", text: `Au commencement de notre marche spirituelle, il convient de poser des fondations solides. La foi n'est pas une émotion passagère, mais une décision quotidienne de placer notre confiance en Celui qui nous a aimés le premier.\n\nQuand nous regardons en arrière, nous voyons combien Dieu a été fidèle. Chaque épreuve traversée porte la marque de Sa grâce. Chaque larme versée a été recueillie dans Sa coupe.\n\n« L'Éternel est mon berger, je ne manquerai de rien. »\n\nCette parole, gravée dans nos cœurs depuis l'enfance pour certains, prend tout son sens lorsque nous traversons la vallée. Le berger ne quitte jamais ses brebis. Il les conduit, les protège, les nourrit.` },
@@ -11,13 +12,18 @@ const chapters = [
 
 export default function BookReader() {
   const { id } = useParams();
+  const uploaded = useMemo(() => (id ? findUploadedBook(id) : null), [id]);
   const [chapterIdx, setChapterIdx] = useState(0);
   const [fontSize, setFontSize] = useState(17);
   const [showTOC, setShowTOC] = useState(false);
   const [bookmarked, setBookmarked] = useState(false);
 
   const chapter = chapters[chapterIdx];
-  const progress = ((chapterIdx + 1) / chapters.length) * 100;
+  const progress = uploaded ? 0 : ((chapterIdx + 1) / chapters.length) * 100;
+  const headerTitle = uploaded?.title ?? "La grâce qui transforme";
+  const headerSub = uploaded
+    ? `${uploaded.author} · ${uploaded.format.toUpperCase()}`
+    : `Chapitre ${chapter.num} · ${chapter.title}`;
 
   return (
     <div className="min-h-[calc(100dvh-7.5rem)] md:min-h-[calc(100dvh-5rem)] bg-[hsl(40_30%_98%)]">
