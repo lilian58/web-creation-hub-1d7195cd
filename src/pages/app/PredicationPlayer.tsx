@@ -62,9 +62,35 @@ export default function PredicationPlayer() {
         </div>
 
         {/* Cover / video frame */}
-        <div className="relative aspect-square max-w-sm mx-auto rounded-3xl overflow-hidden shadow-glow mb-8">
-          <img src={preaching} alt="" className="w-full h-full object-cover" width={800} height={600} />
-          {mode === "video" && (
+        <div className="relative aspect-square max-w-sm mx-auto rounded-3xl overflow-hidden shadow-glow mb-8 bg-black/20">
+          {uploaded && mode === "video" ? (
+            <video
+              ref={(el) => { mediaRef.current = el; }}
+              src={uploaded.mediaUrl}
+              poster={uploaded.coverUrl}
+              className="w-full h-full object-cover"
+              onTimeUpdate={(e) => {
+                const v = e.currentTarget;
+                if (v.duration) setProgress((v.currentTime / v.duration) * 100);
+              }}
+              onEnded={() => setPlaying(false)}
+              playsInline
+            />
+          ) : (
+            <img src={cover} alt="" className="w-full h-full object-cover" width={800} height={600} />
+          )}
+          {uploaded && mode === "audio" && (
+            <audio
+              ref={(el) => { mediaRef.current = el; }}
+              src={uploaded.mediaUrl}
+              onTimeUpdate={(e) => {
+                const a = e.currentTarget;
+                if (a.duration) setProgress((a.currentTime / a.duration) * 100);
+              }}
+              onEnded={() => setPlaying(false)}
+            />
+          )}
+          {mode === "video" && !uploaded && (
             <div className="absolute inset-0 bg-primary-deep/20 flex items-center justify-center">
               <button onClick={() => setPlaying(!playing)} className="w-20 h-20 rounded-full bg-primary-foreground/95 flex items-center justify-center text-primary shadow-glow">
                 {playing ? <Pause className="w-8 h-8 fill-current" /> : <Play className="w-8 h-8 fill-current ml-1" />}
@@ -75,9 +101,11 @@ export default function PredicationPlayer() {
 
         {/* Title & author */}
         <div className="text-center mb-8">
-          <h1 className="font-display text-3xl md:text-4xl font-bold mb-2">Marcher par la foi</h1>
-          <p className="text-primary-foreground/80">Pasteur Daniel K.</p>
-          <p className="text-gold text-sm font-medium mt-1">Série : La vie chrétienne · Mai 2026</p>
+          <h1 className="font-display text-3xl md:text-4xl font-bold mb-2">{title}</h1>
+          <p className="text-primary-foreground/80">{author}</p>
+          {uploaded?.category && (
+            <p className="text-gold text-sm font-medium mt-1">Catégorie : {uploaded.category}</p>
+          )}
         </div>
 
         {/* Waveform / progress */}
