@@ -1,12 +1,10 @@
-import { Upload, Mic, BookOpen, Eye, Heart, Users as UsersIcon, DollarSign, Plus, MoreVertical, Image as ImageIcon, FileAudio, FileVideo, FileText, X, TrendingUp, Trash2, CheckCircle2 } from "lucide-react";
+import { Upload, Mic, BookOpen, Eye, Heart, Users as UsersIcon, DollarSign, Plus, MoreVertical, FileVideo, TrendingUp, Trash2, CheckCircle2 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { useAuth } from "@/context/AuthContext";
 import { toast } from "@/hooks/use-toast";
+import UploadContentSheet from "@/components/UploadContentSheet";
 import {
-  addBook,
-  addPredication,
   deleteUploadedBook,
   deleteUploadedPredication,
   useUploadedBooks,
