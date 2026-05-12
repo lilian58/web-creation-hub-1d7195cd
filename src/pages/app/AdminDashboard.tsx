@@ -1,13 +1,20 @@
-import { Users, Flag, BarChart3, BookOpen, Mic, Search, MoreHorizontal, ShieldAlert, Check, X, TrendingUp } from "lucide-react";
-import { useState } from "react";
+import { Users, Flag, BarChart3, BookOpen, Mic, Search, MoreHorizontal, ShieldAlert, Check, X, TrendingUp, Plus, Upload, Languages, Trash2, FileText, FileVideo } from "lucide-react";
+import { useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
-
-const stats = [
-  { label: "Utilisateurs", value: "12 384", delta: "+5.2%", icon: Users, color: "from-primary to-primary-glow" },
-  { label: "Prédications", value: "1 247", delta: "+12", icon: Mic, color: "from-amber-500 to-orange-500" },
-  { label: "Livres", value: "342", delta: "+8", icon: BookOpen, color: "from-emerald-500 to-teal-500" },
-  { label: "Signalements", value: "23", delta: "-3", icon: Flag, color: "from-rose-500 to-red-500" },
-];
+import { toast } from "@/hooks/use-toast";
+import UploadContentSheet from "@/components/UploadContentSheet";
+import {
+  addBibleVersion,
+  deleteBibleVersion,
+  useBibleVersions,
+} from "@/lib/bible-store";
+import {
+  deleteUploadedBook,
+  deleteUploadedPredication,
+  useUploadedBooks,
+  useUploadedPredications,
+} from "@/lib/content-store";
 
 const reportedUsers = [
   { id: 1, name: "User_X392", reason: "Contenu inapproprié", count: 4, status: "pending" as const },
@@ -23,20 +30,39 @@ const reportedContent = [
 
 export default function AdminDashboard() {
   const [tab, setTab] = useState<"users" | "content">("users");
+  const [showUpload, setShowUpload] = useState(false);
+  const [showBibleForm, setShowBibleForm] = useState(false);
+
+  const versions = useBibleVersions();
+  const books = useUploadedBooks();
+  const predications = useUploadedPredications();
+
+  const stats = useMemo(
+    () => [
+      { label: "Utilisateurs", value: "12 384", delta: "+5.2%", icon: Users, color: "from-primary to-primary-glow" },
+      { label: "Prédications", value: String(predications.length), delta: `+${predications.length}`, icon: Mic, color: "from-amber-500 to-orange-500" },
+      { label: "Livres", value: String(books.length), delta: `+${books.length}`, icon: BookOpen, color: "from-emerald-500 to-teal-500" },
+      { label: "Versions Bible", value: String(versions.length), delta: `+${versions.length}`, icon: Languages, color: "from-indigo-500 to-violet-500" },
+    ],
+    [predications.length, books.length, versions.length]
+  );
 
   return (
     <div className="px-4 md:px-6 lg:px-10 py-6 lg:py-8 max-w-7xl mx-auto space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-3">
         <div>
           <div className="flex items-center gap-2">
             <ShieldAlert className="w-6 h-6 text-primary" />
             <h2 className="font-display text-2xl md:text-3xl font-bold text-primary">Dashboard Admin</h2>
           </div>
-          <p className="text-sm text-muted-foreground mt-1">Modération et statistiques de la plateforme</p>
+          <p className="text-sm text-muted-foreground mt-1">Modération, contenus et versions de la Bible</p>
         </div>
-        <div className="hidden md:flex items-center gap-2 px-3 py-2 rounded-full bg-emerald-500/10 text-emerald-600 text-xs font-semibold">
-          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" /> Tous les services OK
-        </div>
+        <button
+          onClick={() => setShowUpload(true)}
+          className="hidden md:flex items-center gap-2 px-5 py-2.5 gradient-primary text-primary-foreground rounded-full font-semibold shadow-glow"
+        >
+          <Plus className="w-4 h-4" /> Publier un contenu
+        </button>
       </div>
 
       {/* Stats */}
@@ -49,12 +75,116 @@ export default function AdminDashboard() {
             <p className="text-xs text-muted-foreground">{s.label}</p>
             <div className="flex items-baseline justify-between gap-2 mt-1">
               <span className="font-display text-xl md:text-2xl font-bold text-foreground">{s.value}</span>
-              <span className={cn("text-xs font-semibold flex items-center gap-0.5", s.delta.startsWith("-") ? "text-rose-500" : "text-emerald-600")}>
+              <span className="text-xs font-semibold text-emerald-600 flex items-center gap-0.5">
                 <TrendingUp className="w-3 h-3" /> {s.delta}
               </span>
             </div>
           </div>
         ))}
+      </div>
+
+      {/* Versions de la Bible */}
+      <div className="bg-card rounded-3xl shadow-soft overflow-hidden">
+        <div className="p-5 md:p-6 border-b flex items-center justify-between gap-3">
+          <div>
+            <div className="flex items-center gap-2">
+              <Languages className="w-5 h-5 text-primary" />
+              <h3 className="font-display text-lg font-bold text-primary">Versions de la Bible</h3>
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">
+              Charge une traduction (JSON ou TXT) — réservé aux administrateurs.
+            </p>
+          </div>
+          <button
+            onClick={() => setShowBibleForm(true)}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-semibold hover:bg-primary/15"
+          >
+            <Plus className="w-4 h-4" /> Ajouter
+          </button>
+        </div>
+
+        {versions.length === 0 ? (
+          <div className="p-10 text-center">
+            <Languages className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
+            <p className="text-sm text-muted-foreground">Aucune version de Bible chargée.</p>
+          </div>
+        ) : (
+          <div className="divide-y">
+            {versions.map((v) => (
+              <div key={v.id} className="flex items-center gap-3 p-4">
+                <div className="w-12 h-12 rounded-xl bg-indigo-500/10 text-indigo-600 flex items-center justify-center font-bold">
+                  {v.code.slice(0, 3)}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-semibold text-foreground truncate">{v.name}</p>
+                  <p className="text-xs text-muted-foreground truncate">
+                    {v.code} · {v.language.toUpperCase()} · {v.versesCount.toLocaleString()} versets
+                  </p>
+                </div>
+                <button
+                  onClick={() => { deleteBibleVersion(v.id); toast({ title: "Version supprimée" }); }}
+                  className="p-2 rounded-full hover:bg-destructive/10 text-destructive"
+                  aria-label="Supprimer"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Contenus publiés par l'admin */}
+      <div className="bg-card rounded-3xl shadow-soft overflow-hidden">
+        <div className="p-5 md:p-6 border-b flex items-center justify-between gap-3">
+          <div>
+            <h3 className="font-display text-lg font-bold text-primary">Contenus publiés</h3>
+            <p className="text-xs text-muted-foreground mt-1">Livres, prédications audio et vidéos</p>
+          </div>
+          <button
+            onClick={() => setShowUpload(true)}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-semibold hover:bg-primary/15"
+          >
+            <Upload className="w-4 h-4" /> Publier
+          </button>
+        </div>
+        {books.length + predications.length === 0 ? (
+          <div className="p-10 text-center">
+            <Upload className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
+            <p className="text-sm text-muted-foreground">Aucun contenu pour le moment.</p>
+          </div>
+        ) : (
+          <div className="divide-y">
+            {predications.map((p) => (
+              <div key={`p-${p.id}`} className="flex items-center gap-3 p-4">
+                <Link to={`/app/predications/${p.id}`} className="w-12 h-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                  {p.type === "video" ? <FileVideo className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
+                </Link>
+                <Link to={`/app/predications/${p.id}`} className="flex-1 min-w-0">
+                  <p className="font-semibold text-foreground truncate">{p.title}</p>
+                  <p className="mt-0.5 text-xs text-muted-foreground">{p.type === "video" ? "Vidéo" : "Audio"} · {p.author}</p>
+                </Link>
+                <button onClick={() => { deleteUploadedPredication(p.id); toast({ title: "Supprimé" }); }} className="p-2 rounded-full hover:bg-destructive/10 text-destructive" aria-label="Supprimer">
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
+            ))}
+            {books.map((b) => (
+              <div key={`b-${b.id}`} className="flex items-center gap-3 p-4">
+                <Link to={`/app/bibliotheque/${b.id}`} className="w-12 h-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                  <FileText className="w-5 h-5" />
+                </Link>
+                <Link to={`/app/bibliotheque/${b.id}`} className="flex-1 min-w-0">
+                  <p className="font-semibold text-foreground truncate">{b.title}</p>
+                  <p className="mt-0.5 text-xs text-muted-foreground">Livre · {b.author}</p>
+                </Link>
+                <button onClick={() => { deleteUploadedBook(b.id); toast({ title: "Supprimé" }); }} className="p-2 rounded-full hover:bg-destructive/10 text-destructive" aria-label="Supprimer">
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Engagement */}
@@ -69,10 +199,7 @@ export default function AdminDashboard() {
         <div className="flex items-end gap-2 md:gap-3 h-40">
           {[42, 58, 65, 51, 73, 88, 71].map((v, i) => (
             <div key={i} className="flex-1 flex flex-col items-center gap-2">
-              <div
-                className="w-full rounded-t-xl bg-gradient-to-t from-primary to-primary-glow"
-                style={{ height: `${v}%` }}
-              />
+              <div className="w-full rounded-t-xl bg-gradient-to-t from-primary to-primary-glow" style={{ height: `${v}%` }} />
               <span className="text-[10px] text-muted-foreground">{["L", "M", "M", "J", "V", "S", "D"][i]}</span>
             </div>
           ))}
@@ -161,6 +288,133 @@ export default function AdminDashboard() {
               ))}
             </div>
           )}
+        </div>
+      </div>
+
+      {/* FAB upload mobile */}
+      <button
+        onClick={() => setShowUpload(true)}
+        className="md:hidden fixed bottom-36 right-4 z-40 w-14 h-14 rounded-full bg-gold text-primary-deep flex items-center justify-center shadow-glow active:scale-95"
+        aria-label="Publier"
+      >
+        <Upload className="w-6 h-6" />
+      </button>
+
+      <UploadContentSheet open={showUpload} onClose={() => setShowUpload(false)} />
+      <AddBibleVersionDialog open={showBibleForm} onClose={() => setShowBibleForm(false)} />
+    </div>
+  );
+}
+
+// ---- Dialog d'ajout de version Bible -------------------------------------
+function AddBibleVersionDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const [code, setCode] = useState("");
+  const [name, setName] = useState("");
+  const [language, setLanguage] = useState("fr");
+  const [description, setDescription] = useState("");
+  const [file, setFile] = useState<File | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+
+  if (!open) return null;
+
+  const reset = () => {
+    setCode(""); setName(""); setLanguage("fr"); setDescription(""); setFile(null);
+  };
+  const close = () => { if (!submitting) { reset(); onClose(); } };
+
+  const handleSubmit = async () => {
+    if (!code.trim() || !name.trim()) {
+      return toast({ title: "Code et nom requis", variant: "destructive" });
+    }
+    if (!file) {
+      return toast({ title: "Fichier requis", description: "Sélectionne un .json ou .txt.", variant: "destructive" });
+    }
+    setSubmitting(true);
+    try {
+      const v = await addBibleVersion({ code, name, language, description, file });
+      toast({ title: "Version ajoutée", description: `${v.name} · ${v.versesCount} versets` });
+      reset();
+      onClose();
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "Échec de l'import";
+      toast({ title: "Erreur", description: msg, variant: "destructive" });
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <div
+      className="fixed inset-0 z-50 bg-black/60 flex items-end md:items-center justify-center p-0 md:p-4"
+      onClick={close}
+    >
+      <div
+        className="bg-card w-full md:max-w-lg rounded-t-3xl md:rounded-3xl p-6 shadow-card max-h-[90dvh] overflow-y-auto"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between mb-5">
+          <div className="flex items-center gap-2">
+            <Languages className="w-5 h-5 text-primary" />
+            <h3 className="font-display text-xl font-bold text-primary">Nouvelle version de la Bible</h3>
+          </div>
+          <button onClick={close} disabled={submitting} className="w-8 h-8 rounded-full hover:bg-muted flex items-center justify-center">
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+
+        <div className="space-y-3">
+          <div className="grid grid-cols-2 gap-3">
+            <input
+              value={code}
+              onChange={(e) => setCode(e.target.value)}
+              placeholder="Code (ex: LSG)"
+              className="h-11 px-4 bg-muted rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 uppercase"
+            />
+            <input
+              value={language}
+              onChange={(e) => setLanguage(e.target.value)}
+              placeholder="Langue (fr, en...)"
+              className="h-11 px-4 bg-muted rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+            />
+          </div>
+          <input
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="Nom complet (ex: Louis Segond 1910)"
+            className="w-full h-11 px-4 bg-muted rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+          />
+          <textarea
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            placeholder="Description (optionnel)"
+            rows={2}
+            className="w-full px-4 py-3 bg-muted rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 resize-none"
+          />
+
+          <label className="block border-2 border-dashed border-primary/30 rounded-2xl p-6 text-center cursor-pointer hover:bg-primary/5 transition">
+            <Upload className="w-7 h-7 text-primary mx-auto mb-2" />
+            <p className="text-sm font-semibold text-foreground">{file ? file.name : "Fichier .json ou .txt"}</p>
+            <p className="text-xs text-muted-foreground mt-1">
+              {file
+                ? `${(file.size / 1024).toFixed(1)} Ko`
+                : "Format JSON [{book,chapter,verse,text}] ou TXT \"Genèse 1:1 ...\""}
+            </p>
+            <input
+              type="file"
+              accept=".json,.txt,application/json,text/plain"
+              className="hidden"
+              onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+            />
+          </label>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3 mt-5">
+          <button onClick={close} disabled={submitting} className="h-12 rounded-full border font-semibold hover:bg-muted disabled:opacity-50">
+            Annuler
+          </button>
+          <button onClick={handleSubmit} disabled={submitting} className="h-12 rounded-full gradient-primary text-primary-foreground font-semibold shadow-glow disabled:opacity-60">
+            {submitting ? "Import..." : "Ajouter"}
+          </button>
         </div>
       </div>
     </div>
