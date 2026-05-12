@@ -1,14 +1,100 @@
-import { Search } from "lucide-react";
-import { useState } from "react";
+import { Search, Languages, ChevronDown, ShieldAlert } from "lucide-react";
+import { useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/context/AuthContext";
+import { getBibleVerses, useBibleVersions } from "@/lib/bible-store";
 
 const tabs = ["Tous", "Favoris", "Récents"];
-const books = ["Genèse", "Exode", "Lévitique", "Nombres", "Psaumes", "Proverbes", "Matthieu", "Marc", "Luc", "Jean", "Actes", "Romains"];
+const defaultBooks = ["Genèse", "Exode", "Lévitique", "Nombres", "Psaumes", "Proverbes", "Matthieu", "Marc", "Luc", "Jean", "Actes", "Romains"];
 
 export default function Bible() {
   const [tab, setTab] = useState("Tous");
+  const versions = useBibleVersions();
+  const { hasRole } = useAuth();
+  const isAdmin = hasRole("admin");
+
+  const [versionId, setVersionId] = useState<string>("");
+  const [versionMenu, setVersionMenu] = useState(false);
+
+  const activeVersion = useMemo(() => {
+    if (versionId) return versions.find((v) => v.id === versionId) ?? null;
+    return versions[0] ?? null;
+  }, [versions, versionId]);
+
+  const books = useMemo(() => {
+    if (!activeVersion) return defaultBooks;
+    const verses = getBibleVerses(activeVersion.id);
+    const seen = new Set<string>();
+    const ordered: string[] = [];
+    for (const v of verses) {
+      if (!seen.has(v.book)) {
+        seen.add(v.book);
+        ordered.push(v.book);
+      }
+    }
+    return ordered.length ? ordered : defaultBooks;
+  }, [activeVersion]);
+
   return (
     <div className="px-4 md:px-6 lg:px-10 py-6 lg:py-8 max-w-6xl mx-auto space-y-6">
+      {/* Sélecteur de version */}
+      <div className="flex items-center gap-3">
+        <div className="relative flex-1 sm:flex-none">
+          <button
+            onClick={() => setVersionMenu((s) => !s)}
+            className="w-full sm:w-auto flex items-center gap-2 px-4 h-11 rounded-full bg-card shadow-soft text-sm font-semibold text-primary hover:bg-muted/50"
+          >
+            <Languages className="w-4 h-4" />
+            <span className="truncate">
+              {activeVersion ? `${activeVersion.code} · ${activeVersion.name}` : "Aucune version"}
+            </span>
+            <ChevronDown className={cn("w-4 h-4 transition", versionMenu && "rotate-180")} />
+          </button>
+
+          {versionMenu && (
+            <div className="absolute z-30 mt-2 left-0 right-0 sm:right-auto sm:min-w-[280px] bg-card rounded-2xl shadow-card border overflow-hidden">
+              {versions.length === 0 ? (
+                <div className="p-4 text-sm text-muted-foreground">
+                  Aucune version disponible.
+                  {isAdmin && (
+                    <Link to="/app/admin" className="block mt-2 text-primary font-semibold">
+                      → Ajouter une version
+                    </Link>
+                  )}
+                </div>
+              ) : (
+                <ul className="max-h-72 overflow-y-auto">
+                  {versions.map((v) => (
+                    <li key={v.id}>
+                      <button
+                        onClick={() => { setVersionId(v.id); setVersionMenu(false); }}
+                        className={cn(
+                          "w-full text-left px-4 py-3 hover:bg-muted/50 transition",
+                          activeVersion?.id === v.id && "bg-primary/5"
+                        )}
+                      >
+                        <div className="font-semibold text-sm text-foreground">{v.code} · {v.name}</div>
+                        <div className="text-[11px] text-muted-foreground">{v.language.toUpperCase()} · {v.versesCount.toLocaleString()} versets</div>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          )}
+        </div>
+
+        {isAdmin && (
+          <Link
+            to="/app/admin"
+            className="hidden sm:inline-flex items-center gap-2 px-4 h-11 rounded-full bg-primary/10 text-primary text-sm font-semibold hover:bg-primary/15"
+          >
+            <ShieldAlert className="w-4 h-4" /> Gérer les versions
+          </Link>
+        )}
+      </div>
+
       {/* Search */}
       <div className="relative">
         <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
