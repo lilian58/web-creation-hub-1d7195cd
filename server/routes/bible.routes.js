@@ -31,6 +31,7 @@ router.get("/:book/:chapter", getChapter);
 
 // Admin uniquement
 router.post("/versions", protect, authorize("admin"), versionUpload.single("file"), createVersion);
+router.post("/versions/import", protect, authorize("admin"), importVersionFromApi);
 router.delete("/versions/:id", protect, authorize("admin"), deleteVersion);
 
 export default router;
