@@ -8,6 +8,7 @@ import {
   listVersions,
   createVersion,
   deleteVersion,
+  importVersionFromApi,
 } from "../controllers/bible.controller.js";
 
 const router = Router();
