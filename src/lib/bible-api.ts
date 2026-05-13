@@ -198,13 +198,15 @@ async function fetchFromGetBible(
   const total = booksArr.length || 1;
   booksArr.forEach((book, i) => {
     const bookName = book.name ?? `Livre ${book.nr ?? i + 1}`;
-    const chapters = Array.isArray(book.chapters)
-      ? book.chapters
-      : Object.values(book.chapters ?? {});
+    const chapters: GetBibleChapter[] = Array.isArray(book.chapters)
+      ? (book.chapters as GetBibleChapter[])
+      : (Object.values(book.chapters ?? {}) as GetBibleChapter[]);
     for (const ch of chapters) {
       const chNum = Number(ch.chapter);
-      const list = Array.isArray(ch.verses) ? ch.verses : Object.values(ch.verses ?? {});
-      for (const v of list as GetBibleVerse[]) {
+      const list: GetBibleVerse[] = Array.isArray(ch.verses)
+        ? ch.verses
+        : (Object.values(ch.verses ?? {}) as GetBibleVerse[]);
+      for (const v of list) {
         verses.push({
           book: bookName,
           chapter: chNum,
