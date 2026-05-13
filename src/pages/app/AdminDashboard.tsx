@@ -4,8 +4,8 @@ import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
 import UploadContentSheet from "@/components/UploadContentSheet";
+import ImportBibleSheet from "@/components/admin/ImportBibleSheet";
 import {
-  addBibleVersion,
   deleteBibleVersion,
   useBibleVersions,
 } from "@/lib/bible-store";
