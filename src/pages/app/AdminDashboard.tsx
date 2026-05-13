@@ -4,8 +4,8 @@ import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
 import UploadContentSheet from "@/components/UploadContentSheet";
+import ImportBibleSheet from "@/components/admin/ImportBibleSheet";
 import {
-  addBibleVersion,
   deleteBibleVersion,
   useBibleVersions,
 } from "@/lib/bible-store";
@@ -301,122 +301,7 @@ export default function AdminDashboard() {
       </button>
 
       <UploadContentSheet open={showUpload} onClose={() => setShowUpload(false)} />
-      <AddBibleVersionDialog open={showBibleForm} onClose={() => setShowBibleForm(false)} />
-    </div>
-  );
-}
-
-// ---- Dialog d'ajout de version Bible -------------------------------------
-function AddBibleVersionDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
-  const [code, setCode] = useState("");
-  const [name, setName] = useState("");
-  const [language, setLanguage] = useState("fr");
-  const [description, setDescription] = useState("");
-  const [file, setFile] = useState<File | null>(null);
-  const [submitting, setSubmitting] = useState(false);
-
-  if (!open) return null;
-
-  const reset = () => {
-    setCode(""); setName(""); setLanguage("fr"); setDescription(""); setFile(null);
-  };
-  const close = () => { if (!submitting) { reset(); onClose(); } };
-
-  const handleSubmit = async () => {
-    if (!code.trim() || !name.trim()) {
-      return toast({ title: "Code et nom requis", variant: "destructive" });
-    }
-    if (!file) {
-      return toast({ title: "Fichier requis", description: "Sélectionne un .json ou .txt.", variant: "destructive" });
-    }
-    setSubmitting(true);
-    try {
-      const v = await addBibleVersion({ code, name, language, description, file });
-      toast({ title: "Version ajoutée", description: `${v.name} · ${v.versesCount} versets` });
-      reset();
-      onClose();
-    } catch (e) {
-      const msg = e instanceof Error ? e.message : "Échec de l'import";
-      toast({ title: "Erreur", description: msg, variant: "destructive" });
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  return (
-    <div
-      className="fixed inset-0 z-50 bg-black/60 flex items-end md:items-center justify-center p-0 md:p-4"
-      onClick={close}
-    >
-      <div
-        className="bg-card w-full md:max-w-lg rounded-t-3xl md:rounded-3xl p-6 shadow-card max-h-[90dvh] overflow-y-auto"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="flex items-center justify-between mb-5">
-          <div className="flex items-center gap-2">
-            <Languages className="w-5 h-5 text-primary" />
-            <h3 className="font-display text-xl font-bold text-primary">Nouvelle version de la Bible</h3>
-          </div>
-          <button onClick={close} disabled={submitting} className="w-8 h-8 rounded-full hover:bg-muted flex items-center justify-center">
-            <X className="w-4 h-4" />
-          </button>
-        </div>
-
-        <div className="space-y-3">
-          <div className="grid grid-cols-2 gap-3">
-            <input
-              value={code}
-              onChange={(e) => setCode(e.target.value)}
-              placeholder="Code (ex: LSG)"
-              className="h-11 px-4 bg-muted rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 uppercase"
-            />
-            <input
-              value={language}
-              onChange={(e) => setLanguage(e.target.value)}
-              placeholder="Langue (fr, en...)"
-              className="h-11 px-4 bg-muted rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
-            />
-          </div>
-          <input
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="Nom complet (ex: Louis Segond 1910)"
-            className="w-full h-11 px-4 bg-muted rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
-          />
-          <textarea
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            placeholder="Description (optionnel)"
-            rows={2}
-            className="w-full px-4 py-3 bg-muted rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 resize-none"
-          />
-
-          <label className="block border-2 border-dashed border-primary/30 rounded-2xl p-6 text-center cursor-pointer hover:bg-primary/5 transition">
-            <Upload className="w-7 h-7 text-primary mx-auto mb-2" />
-            <p className="text-sm font-semibold text-foreground">{file ? file.name : "Fichier .json ou .txt"}</p>
-            <p className="text-xs text-muted-foreground mt-1">
-              {file
-                ? `${(file.size / 1024).toFixed(1)} Ko`
-                : "Format JSON [{book,chapter,verse,text}] ou TXT \"Genèse 1:1 ...\""}
-            </p>
-            <input
-              type="file"
-              accept=".json,.txt,application/json,text/plain"
-              className="hidden"
-              onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-            />
-          </label>
-        </div>
-
-        <div className="grid grid-cols-2 gap-3 mt-5">
-          <button onClick={close} disabled={submitting} className="h-12 rounded-full border font-semibold hover:bg-muted disabled:opacity-50">
-            Annuler
-          </button>
-          <button onClick={handleSubmit} disabled={submitting} className="h-12 rounded-full gradient-primary text-primary-foreground font-semibold shadow-glow disabled:opacity-60">
-            {submitting ? "Import..." : "Ajouter"}
-          </button>
-        </div>
-      </div>
+      <ImportBibleSheet open={showBibleForm} onClose={() => setShowBibleForm(false)} />
     </div>
   );
 }

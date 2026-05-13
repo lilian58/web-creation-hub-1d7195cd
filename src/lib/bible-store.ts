@@ -142,6 +142,56 @@ export function deleteBibleVersion(id: string) {
   window.dispatchEvent(new CustomEvent(CHANGE_EVT));
 }
 
+// ---- Import via API en ligne ---------------------------------------------
+import { fetchBibleFromApi, type BibleApiSource } from "@/lib/bible-api";
+
+export interface AddBibleVersionFromApiInput {
+  source: BibleApiSource;
+  translation: string;
+  /** Override optionnel — sinon valeurs renvoyées par l'API */
+  code?: string;
+  name?: string;
+  language?: string;
+  description?: string;
+}
+
+export async function addBibleVersionFromApi(
+  input: AddBibleVersionFromApiInput,
+  onProgress?: (pct: number, label?: string) => void,
+): Promise<BibleVersion> {
+  if (hasBackend()) {
+    const res = await fetch(`${API_URL}/api/bible/versions/import`, {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(input),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data?.message ?? `Erreur ${res.status}`);
+    return data.version as BibleVersion;
+  }
+
+  const fetched = await fetchBibleFromApi({
+    source: input.source,
+    translation: input.translation,
+    onProgress,
+  });
+  if (fetched.verses.length === 0) throw new Error("Aucun verset reçu de l'API.");
+
+  const version: BibleVersion = {
+    id: crypto.randomUUID(),
+    code: (input.code ?? fetched.code).trim().toUpperCase(),
+    name: (input.name ?? fetched.name).trim(),
+    language: (input.language ?? fetched.language).trim().toLowerCase(),
+    description: input.description?.trim(),
+    versesCount: fetched.verses.length,
+    createdAt: Date.now(),
+  };
+  write(VERSIONS_KEY, [version, ...getBibleVersions()]);
+  write(VERSES_KEY(version.id), fetched.verses);
+  return version;
+}
+
 // ---- Hook -----------------------------------------------------------------
 export function useBibleVersions(): BibleVersion[] {
   const [items, setItems] = useState<BibleVersion[]>(getBibleVersions);
