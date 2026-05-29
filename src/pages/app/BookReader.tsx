@@ -1,25 +1,78 @@
-import { ArrowLeft, ChevronLeft, ChevronRight, Bookmark, Type, List, Download } from "lucide-react";
-import { useMemo, useState } from "react";
+import { ArrowLeft, ChevronLeft, ChevronRight, Bookmark, Type, List, Loader2, AlertTriangle, Download } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { findUploadedBook } from "@/lib/content-store";
+import { parseDocument, type DocChapter } from "@/lib/doc-parser";
 
-const chapters = [
-  { num: 1, title: "Le commencement", text: `Au commencement de notre marche spirituelle, il convient de poser des fondations solides. La foi n'est pas une émotion passagère, mais une décision quotidienne de placer notre confiance en Celui qui nous a aimés le premier.\n\nQuand nous regardons en arrière, nous voyons combien Dieu a été fidèle. Chaque épreuve traversée porte la marque de Sa grâce. Chaque larme versée a été recueillie dans Sa coupe.\n\n« L'Éternel est mon berger, je ne manquerai de rien. »\n\nCette parole, gravée dans nos cœurs depuis l'enfance pour certains, prend tout son sens lorsque nous traversons la vallée. Le berger ne quitte jamais ses brebis. Il les conduit, les protège, les nourrit.` },
-  { num: 2, title: "La grâce qui sauve", text: `La grâce ne se mérite pas. Elle se reçoit. C'est là toute la beauté de l'évangile.\n\nNous avons tous, à un moment ou à un autre, tenté de gagner l'amour de Dieu par nos œuvres. Mais Dieu nous aime non à cause de ce que nous faisons, mais à cause de ce que Christ a fait.\n\nReposons-nous dans cette vérité aujourd'hui.` },
-  { num: 3, title: "Marcher par l'Esprit", text: `L'Esprit Saint est notre guide quotidien. Apprendre à reconnaître Sa voix demande du temps, du silence, de l'écoute.\n\nDans le tumulte du monde, prenons un moment chaque jour pour nous arrêter et prêter l'oreille.` },
+const demoChapters: DocChapter[] = [
+  {
+    num: 1,
+    title: "Le commencement",
+    paragraphs: [
+      "Au commencement de notre marche spirituelle, il convient de poser des fondations solides. La foi n'est pas une émotion passagère, mais une décision quotidienne de placer notre confiance en Celui qui nous a aimés le premier.",
+      "Quand nous regardons en arrière, nous voyons combien Dieu a été fidèle. Chaque épreuve traversée porte la marque de Sa grâce. Chaque larme versée a été recueillie dans Sa coupe.",
+      "« L'Éternel est mon berger, je ne manquerai de rien. »",
+      "Cette parole, gravée dans nos cœurs depuis l'enfance pour certains, prend tout son sens lorsque nous traversons la vallée. Le berger ne quitte jamais ses brebis. Il les conduit, les protège, les nourrit.",
+    ],
+  },
+  {
+    num: 2,
+    title: "La grâce qui sauve",
+    paragraphs: [
+      "La grâce ne se mérite pas. Elle se reçoit. C'est là toute la beauté de l'évangile.",
+      "Nous avons tous, à un moment ou à un autre, tenté de gagner l'amour de Dieu par nos œuvres. Mais Dieu nous aime non à cause de ce que nous faisons, mais à cause de ce que Christ a fait.",
+      "Reposons-nous dans cette vérité aujourd'hui.",
+    ],
+  },
+  {
+    num: 3,
+    title: "Marcher par l'Esprit",
+    paragraphs: [
+      "L'Esprit Saint est notre guide quotidien. Apprendre à reconnaître Sa voix demande du temps, du silence, de l'écoute.",
+      "Dans le tumulte du monde, prenons un moment chaque jour pour nous arrêter et prêter l'oreille.",
+    ],
+  },
 ];
 
 export default function BookReader() {
   const { id } = useParams();
   const uploaded = useMemo(() => (id ? findUploadedBook(id) : null), [id]);
+  const [chapters, setChapters] = useState<DocChapter[]>(demoChapters);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
   const [chapterIdx, setChapterIdx] = useState(0);
-  const [fontSize, setFontSize] = useState(17);
+  const [fontSize, setFontSize] = useState(18);
   const [showTOC, setShowTOC] = useState(false);
   const [bookmarked, setBookmarked] = useState(false);
 
-  const chapter = chapters[chapterIdx];
-  const progress = uploaded ? 0 : ((chapterIdx + 1) / chapters.length) * 100;
+  // Parse the uploaded document (PDF / DOCX) into chapters
+  useEffect(() => {
+    if (!uploaded) {
+      setChapters(demoChapters);
+      setError(null);
+      return;
+    }
+    let cancelled = false;
+    setLoading(true);
+    setError(null);
+    parseDocument({ url: uploaded.fileUrl, format: uploaded.format })
+      .then((doc) => {
+        if (cancelled) return;
+        setChapters(doc.chapters.length ? doc.chapters : [{ num: 1, title: uploaded.title, paragraphs: ["(Document vide)"] }]);
+        setChapterIdx(0);
+      })
+      .catch((e: Error) => {
+        if (cancelled) return;
+        setError(e.message);
+      })
+      .finally(() => !cancelled && setLoading(false));
+    return () => { cancelled = true; };
+  }, [uploaded]);
+
+  const chapter = chapters[chapterIdx] ?? chapters[0];
+  const progress = ((chapterIdx + 1) / chapters.length) * 100;
   const headerTitle = uploaded?.title ?? "La grâce qui transforme";
   const headerSub = uploaded
     ? `${uploaded.author} · ${uploaded.format.toUpperCase()}`
@@ -53,7 +106,7 @@ export default function BookReader() {
       {showTOC && (
         <div className="max-w-3xl mx-auto px-4 md:px-6 py-4 border-b bg-card">
           <h3 className="font-display font-semibold text-primary mb-3">Sommaire</h3>
-          <div className="space-y-1">
+          <div className="space-y-1 max-h-[50dvh] overflow-y-auto">
             {chapters.map((c, i) => (
               <button
                 key={c.num}
@@ -64,7 +117,7 @@ export default function BookReader() {
                 )}
               >
                 <span className="font-display text-lg w-8 text-center text-gold">{c.num}</span>
-                <span>{c.title}</span>
+                <span className="truncate">{c.title}</span>
               </button>
             ))}
           </div>
@@ -72,39 +125,42 @@ export default function BookReader() {
       )}
 
       {/* Reading area */}
-      {uploaded ? (
-        <div className="max-w-5xl mx-auto px-2 md:px-6 py-6">
-          {uploaded.format === "pdf" ? (
-            <iframe
-              src={uploaded.fileUrl}
-              title={uploaded.title}
-              className="w-full h-[80dvh] rounded-2xl border bg-card shadow-soft"
-            />
-          ) : (
-            <div className="bg-card rounded-2xl shadow-soft p-10 text-center">
-              <p className="font-display text-xl font-semibold text-primary mb-2">{uploaded.title}</p>
-              <p className="text-sm text-muted-foreground mb-6">
-                Les fichiers EPUB ne sont pas affichés en aperçu. Télécharge le livre pour le lire dans ton lecteur.
-              </p>
+      {loading ? (
+        <div className="max-w-3xl mx-auto px-6 py-20 flex flex-col items-center gap-3 text-muted-foreground">
+          <Loader2 className="w-6 h-6 animate-spin text-primary" />
+          <p className="text-sm">Préparation du document...</p>
+        </div>
+      ) : error ? (
+        <div className="max-w-3xl mx-auto px-6 py-16">
+          <div className="bg-card rounded-2xl shadow-soft p-8 text-center space-y-4">
+            <AlertTriangle className="w-8 h-8 text-gold mx-auto" />
+            <p className="text-sm text-foreground">{error}</p>
+            {uploaded && (
               <a
                 href={uploaded.fileUrl}
-                download={`${uploaded.title}.epub`}
-                className="inline-flex items-center gap-2 px-6 py-3 gradient-primary text-primary-foreground rounded-full font-semibold shadow-glow"
+                download={`${uploaded.title}.${uploaded.format}`}
+                className="inline-flex items-center gap-2 px-5 py-2.5 gradient-primary text-primary-foreground rounded-full font-semibold shadow-glow"
               >
-                <Download className="w-4 h-4" /> Télécharger l'EPUB
+                <Download className="w-4 h-4" /> Télécharger le fichier
               </a>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       ) : (
         <article className="max-w-3xl mx-auto px-6 md:px-10 py-10 md:py-16">
-          <p className="text-sm uppercase tracking-widest text-gold font-semibold mb-3">Chapitre {chapter.num}</p>
-          <h1 className="font-display text-3xl md:text-5xl font-bold text-primary mb-8">{chapter.title}</h1>
+          <p className="text-sm uppercase tracking-widest text-gold font-semibold mb-3">
+            Chapitre {chapter.num}
+          </p>
+          <h1 className="font-display text-3xl md:text-5xl font-bold text-primary mb-8 leading-tight">
+            {chapter.title}
+          </h1>
           <div
-            className="font-display text-foreground leading-relaxed whitespace-pre-line"
+            className="font-display text-foreground space-y-6"
             style={{ fontSize: `${fontSize}px`, lineHeight: 1.75 }}
           >
-            {chapter.text}
+            {chapter.paragraphs.map((p, i) => (
+              <p key={i}>{p}</p>
+            ))}
           </div>
         </article>
       )}
@@ -122,11 +178,11 @@ export default function BookReader() {
           <div className="flex items-center gap-2 bg-card border rounded-full px-2 py-1 shadow-soft">
             <button onClick={() => setFontSize(Math.max(13, fontSize - 1))} className="w-8 h-8 rounded-full hover:bg-muted text-sm font-bold">A-</button>
             <Type className="w-4 h-4 text-muted-foreground" />
-            <button onClick={() => setFontSize(Math.min(24, fontSize + 1))} className="w-8 h-8 rounded-full hover:bg-muted text-sm font-bold">A+</button>
+            <button onClick={() => setFontSize(Math.min(26, fontSize + 1))} className="w-8 h-8 rounded-full hover:bg-muted text-sm font-bold">A+</button>
           </div>
           <button
             onClick={() => setChapterIdx(Math.min(chapters.length - 1, chapterIdx + 1))}
-            disabled={chapterIdx === chapters.length - 1}
+            disabled={chapterIdx >= chapters.length - 1}
             className="flex items-center gap-2 px-4 py-2.5 gradient-primary text-primary-foreground rounded-full text-sm font-medium disabled:opacity-40 shadow-glow"
           >
             Suivant <ChevronRight className="w-4 h-4" />

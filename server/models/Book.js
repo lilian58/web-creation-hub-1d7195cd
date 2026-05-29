@@ -8,7 +8,7 @@ const bookSchema = new mongoose.Schema(
     description: String,
     coverUrl: String,
     fileUrl: { type: String, required: true },
-    format: { type: String, enum: ["pdf", "epub"], default: "pdf" },
+    format: { type: String, enum: ["pdf", "doc", "docx"], default: "pdf" },
     pages: Number,
     category: String,
     price: { type: Number, default: 0 },

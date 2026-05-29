@@ -14,9 +14,16 @@ const storage = multer.diskStorage({
 });
 
 const fileFilter = (_req, file, cb) => {
-  const allowed = /audio|video|image|pdf|epub/;
-  if (allowed.test(file.mimetype)) cb(null, true);
-  else cb(new Error("Type de fichier non autorisé"));
+  const mime = file.mimetype || "";
+  const name = (file.originalname || "").toLowerCase();
+  const isDoc =
+    mime === "application/pdf" ||
+    mime === "application/msword" ||
+    mime === "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ||
+    /\.(pdf|doc|docx)$/.test(name);
+  const isMedia = /^(audio|video|image)\//.test(mime);
+  if (isDoc || isMedia) cb(null, true);
+  else cb(new Error("Type de fichier non autorisé (PDF, DOC, DOCX, audio, vidéo, image uniquement)"));
 };
 
 export const upload = multer({

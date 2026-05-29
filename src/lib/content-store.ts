@@ -18,8 +18,8 @@ export interface UploadedBook {
   description?: string;
   category?: string;
   coverUrl?: string;
-  fileUrl: string; // pdf/epub data URL en mock
-  format: "pdf" | "epub";
+  fileUrl: string; // pdf/doc/docx data URL en mock
+  format: "pdf" | "doc" | "docx";
   createdAt: number;
   authorId?: string;
 }
@@ -85,7 +85,12 @@ export interface AddBookInput {
 }
 
 export async function addBook(input: AddBookInput): Promise<UploadedBook> {
-  const format: "pdf" | "epub" = /\.epub$/i.test(input.file.name) ? "epub" : "pdf";
+  const lower = input.file.name.toLowerCase();
+  const format: "pdf" | "doc" | "docx" = lower.endsWith(".docx")
+    ? "docx"
+    : lower.endsWith(".doc")
+      ? "doc"
+      : "pdf";
 
   if (hasBackend()) {
     const fd = new FormData();
