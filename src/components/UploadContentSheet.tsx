@@ -4,13 +4,14 @@ import { cn } from "@/lib/utils";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "@/hooks/use-toast";
 import { addBook, addPredication } from "@/lib/content-store";
+import { ACCEPT_ATTR, isAcceptedDocument } from "@/lib/doc-parser";
 
 export type UploadType = "audio" | "video" | "book";
 
 const acceptForType: Record<UploadType, string> = {
   audio: "audio/*",
   video: "video/*",
-  book: ".pdf,.epub,application/pdf,application/epub+zip",
+  book: ACCEPT_ATTR,
 };
 
 interface Props {
@@ -48,6 +49,14 @@ export default function UploadContentSheet({
   const handleSubmit = async () => {
     if (!title.trim()) return toast({ title: "Titre requis", variant: "destructive" });
     if (!file) return toast({ title: "Fichier requis", variant: "destructive" });
+    if (type === "book" && !isAcceptedDocument(file)) {
+      return toast({
+        title: "Format non supporté",
+        description: "Seuls les fichiers PDF, DOC et DOCX sont acceptés.",
+        variant: "destructive",
+      });
+    }
+
 
     setSubmitting(true);
     try {
@@ -126,7 +135,13 @@ export default function UploadContentSheet({
             className="hidden"
             onChange={(e) => setFile(e.target.files?.[0] ?? null)}
           />
+          {type === "book" && (
+            <p className="text-[11px] text-muted-foreground mt-2">
+              Formats acceptés : PDF, DOC, DOCX uniquement.
+            </p>
+          )}
         </label>
+
 
         <div className="space-y-3">
           <input
