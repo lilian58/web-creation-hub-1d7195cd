@@ -8,7 +8,6 @@
  * - DOC : non lisible côté navigateur — message clair invitant à convertir.
  */
 import * as pdfjsLib from "pdfjs-dist";
-// @ts-expect-error - vite worker import
 import workerSrc from "pdfjs-dist/build/pdf.worker.min.mjs?url";
 import mammoth from "mammoth";
 
